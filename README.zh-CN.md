@@ -2,14 +2,14 @@
 
 [English](README.md) | [中文](README.zh-CN.md)
 
-这是一个使用 Python 开发的工具，用于在 Warcraft III 的 `LNI` 物体数据 / 地图物体数据 与 `Excel` 表格之间进行互相转换，方便使用者更高效地修改和维护物体数据。
+这是一个使用 Python 开发的工具，用于在 Warcraft III 的物体数据与 `Excel` 表格之间进行互相转换，方便使用者更高效地修改和维护物体数据。
 
 ## 功能特性
 
 - 将 Warcraft III 物体数据从 `INI` 转换为 `Excel`
 - 将编辑后的 `Excel` 转换回 `INI`
 - 便于在表格中整理、筛选和批量修改物体数据
-- 计划支持在本地安装 [`w3x2lni`](https://github.com/sumneko/w3x2lni) 后，直接调用它实现 `.w3x` 与 `Excel` 之间的转换
+- 当在工具中指定并配置 [`w3x2lni`](https://github.com/sumneko/w3x2lni) 的安装目录后，可使用其相关 `.w3x` 转换功能
 
 ## 项目目标
 
@@ -20,7 +20,7 @@
 1. 将地图物体数据导出为 `LNI` 或 `INI`
 2. 在 `Excel` 中编辑数据
 3. 将修改后的数据导回 Warcraft III 可用格式
-4. 如需直接处理 `.w3x` 地图，可配合 [`w3x2lni`](https://github.com/sumneko/w3x2lni) 使用，进一步简化流程
+4. 如果已安装并在工具中配置 [`w3x2lni`](https://github.com/sumneko/w3x2lni)，即可支持相关 `.w3x` 转换流程
 
 ## 当前状态
 
@@ -29,6 +29,7 @@
 - `INI` → `Excel` 转换已可使用
 - `Excel` → `INI` 转换计划中 / 开发中
 - 图形界面位于 [`script/gui.py`](script/gui.py)
+- `w3x2lni` 功能依赖于在工具中配置正确的安装路径
 
 ## 仓库结构
 
@@ -40,8 +41,6 @@
   - 示例 `INI` 数据与样例资源
 - [`rundata/`](rundata/)
   - 运行生成的输出文件
-- [`w3x2lni/`](w3x2lni/)
-  - 内置的上游 [`w3x2lni`](https://github.com/sumneko/w3x2lni) 参考副本
 
 ## 使用方法
 
@@ -57,10 +56,14 @@
 
 运行 [`script/gui.py`](script/gui.py) 启动图形界面。
 
+### 4. `w3x2lni` 辅助流程
+
+当你已安装 [`w3x2lni`](https://github.com/sumneko/w3x2lni) 并在工具中指定其安装目录后，项目即可调用其相关能力，支持 `.w3x` 相关转换流程。
+
 ## 说明
 
 - 本项目专注于 Warcraft III 物体数据编辑流程。
-- 如果你希望使用 `.w3x` 直接转换，请先在本地安装 [`w3x2lni`](https://github.com/sumneko/w3x2lni)，并按项目预期路径放置后再使用计划中的集成功能。
+- `w3x2lni` 相关功能仅在工具中配置了正确的安装路径后可用。
 - 生成的文件会保存在 [`rundata/output/`](rundata/output/)。
 
 ## 许可证
