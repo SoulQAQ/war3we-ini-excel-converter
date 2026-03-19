@@ -65,4 +65,4 @@ Launch the graphical interface in [`script/gui.py`](script/gui.py).
 
 ## License
 
-The project license should be added here before publishing the repository.
+This project is licensed under the [GPL-3.0 License](https://www.gnu.org/licenses/gpl-3.0.en.html).

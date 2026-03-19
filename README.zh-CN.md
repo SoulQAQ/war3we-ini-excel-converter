@@ -65,4 +65,4 @@
 
 ## 许可证
 
-仓库对外发布前，请补充项目许可证信息。
+本项目采用 [GPL-3.0 许可证](https://www.gnu.org/licenses/gpl-3.0.en.html)。
