@@ -5,11 +5,11 @@ INI 转 Excel 工具
 将 INI 文件转换为 Excel 文件
 """
 
-import configparser
 import os
 import sys
 import re
 from openpyxl import Workbook
+from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
 
 
@@ -32,6 +32,30 @@ def get_ini_files(folder_path):
     elif os.path.isfile(folder_path) and folder_path.lower().endswith('.ini'):
         ini_files.append(folder_path)
     return ini_files
+
+
+def decode_ini_value(value):
+    """将 INI 原始值解码为适合 Excel 展示的纯文本。"""
+    if not isinstance(value, str):
+        return value
+
+    stripped = value.strip()
+
+    if stripped.startswith('{') and stripped.endswith('}'):
+        inner = stripped[1:-1].strip()
+        if inner:
+            matches = re.findall(r'\[=\[(.*?)\]=\]', inner, flags=re.DOTALL)
+            if matches:
+                return '\n\n'.join(match.strip('\n\r') for match in matches)
+        return inner
+
+    if stripped.startswith('[=[') and stripped.endswith(']=]'):
+        return stripped[3:-3]
+
+    if value.startswith('"') and value.endswith('"') and '\n' not in value:
+        return value[1:-1]
+
+    return value
 
 
 def parse_ini_file(file_path):
@@ -319,6 +343,8 @@ def create_excel_with_sheets(ini_folder, output_path, ini_names=None):
         ws.cell(row=2, column=1, value='')
         ws.cell(row=1, column=2, value='模板 ID')
         ws.cell(row=2, column=2, value='')
+
+        yahei_font = Font(name='Microsoft YaHei')
         
         # 收集所有属性名和注释
         all_props = []
@@ -349,12 +375,15 @@ def create_excel_with_sheets(ini_folder, output_path, ini_names=None):
             prop_values = {p['name']: p['value'] for p in obj['properties']}
             for col_idx, prop_name in enumerate(all_props):
                 col = col_offset + col_idx
-                value = prop_values.get(prop_name, '')
-                # 去除值的引号（如果是普通字符串）
-                if isinstance(value, str) and value.startswith('"') and value.endswith('"') and '\n' not in value:
-                    value = value[1:-1]
+                value = decode_ini_value(prop_values.get(prop_name, ''))
                 ws.cell(row=row_idx, column=col, value=value)
         
+        for row in ws.iter_rows():
+            for cell in row:
+                cell.font = yahei_font
+
+        ws.freeze_panes = 'C3'
+
         # 自动调整列宽
         # 调整物体 ID 和模板 ID 列
         auto_size_column(ws, 1, min_width=10, max_width=20)
