@@ -71,15 +71,47 @@ def parse_ini_file(file_path):
                 'comment': comment
             })
 
-    def strip_multiline_markers(text):
-        if text.startswith('[=['):
-            text = text[3:]
-        if text.endswith(']=]'):
-            text = text[:-3]
-        return text
+    def parse_braced_multiline_value(initial_text, line_iterator):
+        """
+        解析形如 { [=[...]=], [=[...]=], ... } 的集合多行文本，保留完整原始文本内容。
+        返回值不包含属性名左侧，仅包含从 { 开始到 } 结束的值文本。
+        """
+        collected_lines = [initial_text]
+        bracket_depth = initial_text.count('{') - initial_text.count('}')
+        in_lua_block = False
+
+        while bracket_depth > 0:
+            try:
+                next_raw_line = next(line_iterator)
+            except StopIteration:
+                break
+
+            next_line = next_raw_line.rstrip('\n\r')
+            collected_lines.append(next_line)
+
+            cursor = 0
+            while cursor < len(next_line):
+                if not in_lua_block and next_line.startswith('[=[', cursor):
+                    in_lua_block = True
+                    cursor += 3
+                    continue
+                if in_lua_block and next_line.startswith(']=]', cursor):
+                    in_lua_block = False
+                    cursor += 3
+                    continue
+                if not in_lua_block:
+                    char = next_line[cursor]
+                    if char == '{':
+                        bracket_depth += 1
+                    elif char == '}':
+                        bracket_depth -= 1
+                cursor += 1
+
+        return '\n'.join(collected_lines)
 
     with open(file_path, 'r', encoding='utf-8') as f:
-        for raw_line in f:
+        line_iterator = iter(f)
+        for raw_line in line_iterator:
             line = raw_line.rstrip('\n\r')
             stripped = line.strip()
 
@@ -139,32 +171,11 @@ def parse_ini_file(file_path):
 
             # 6) 多行/集合文本开始
             if value.startswith('{'):
-                # 普通集合行：把 { 作为结构符号，不写入值
-                # 若下一字符开始就是 [=[...]=]，则继续作为多行文本元素处理
-                remainder = value[1:].strip()
-                if remainder == '':
-                    # 仅有 {，说明后面会跟多项值或多行值
-                    append_property(current_object, key, '', current_comment)
-                    current_comment = None
-                    continue
-
-                # 形如 { [=[...]=], [=[...]=] }
-                if remainder.startswith('[=['):
-                    # 这里不直接 append，转入“集合元素累积”模式：
-                    # 先把当前属性值设为空，后续把文本块作为逗号分隔元素追加
-                    in_multiline = True
-                    multiline_key = key
-                    multiline_comment = current_comment
-                    multiline_value_lines = []
-                    current_comment = None
-                    # 把当前行剩余部分交给多行解析（不保留 [=[ / ]=]）
-                    inline = strip_multiline_markers(remainder)
-                    if inline:
-                        multiline_value_lines.append(inline)
-                    continue
-
-                # 其他集合/花括号结构，直接保留原样，避免丢数据
-                append_property(current_object, key, value, current_comment)
+                # ability.ini 中存在 { [=[...]=], ... } 这类 Lua 风格集合文本。
+                # 旧逻辑会把起始 { 视为纯结构符号并丢弃，导致导出 Excel 为空。
+                # 这里直接按完整块保留原始值，直到匹配到对应的 }。
+                braced_value = parse_braced_multiline_value(value, line_iterator)
+                append_property(current_object, key, braced_value, current_comment)
                 current_comment = None
                 continue
 
