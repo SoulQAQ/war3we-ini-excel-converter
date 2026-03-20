@@ -1,3 +1,5 @@
 rundata/
 example/
 w3x2lni/
+.venv/
+dist/

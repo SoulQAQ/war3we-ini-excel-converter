@@ -8,7 +8,7 @@ ini_names:
   upgrade.ini: 科技
   w3i.ini: 地图属性
 user_settings:
-  input_path: ../Attack and defense 0.1.36/table
-  output_path: ../out
+  input_path: example/ini/Attack and defense 0.1.36-preview/table
+  output_path: rundata/output
   output_filename: output
   conversion_type: ini_to_excel

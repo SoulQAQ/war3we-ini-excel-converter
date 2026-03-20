@@ -1,28 +1,39 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-INI 与 Excel 文件互转工具
-支持 .ini 配置文件与 .xlsx/.xls Excel 文件之间的相互转换
+INI 与 Excel 文件互转工具 WebView 界面
+使用 pywebview 加载 webui/index.html，后续可平滑升级到 Vue。
 """
 
-import tkinter as tk
-from tkinter import messagebox, filedialog
 import os
 import sys
 from pathlib import Path
+from typing import Any, Dict
 
 try:
     import yaml
 except ImportError as exc:
     raise RuntimeError("缺少 PyYAML 依赖，请先执行: pip install pyyaml") from exc
 
-# 导入转换模块
+try:
+    import webview
+except ImportError as exc:
+    raise RuntimeError("缺少 pywebview 依赖，请先执行: pip install pywebview") from exc
+
 from ini_to_excel import ini_to_excel, get_unique_filename
 from excel_to_ini import excel_to_ini
 
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+if getattr(sys, 'frozen', False):
+    APP_DIR = Path(sys.executable).resolve().parent
+    RESOURCE_DIR = Path(getattr(sys, '_MEIPASS', APP_DIR)).resolve()
+else:
+    APP_DIR = Path(__file__).resolve().parent.parent
+    RESOURCE_DIR = APP_DIR
+
+BASE_DIR = APP_DIR
 CONFIG_PATH = BASE_DIR / 'config' / 'setting.yaml'
+WEBUI_INDEX = RESOURCE_DIR / 'webui' / 'index.html'
 
 
 DEFAULT_CONFIG = {
@@ -43,6 +54,9 @@ DEFAULT_CONFIG = {
         'conversion_type': 'ini_to_excel',
     },
 }
+
+
+window = None
 
 
 def normalize_relative_path(path_value):
@@ -74,10 +88,13 @@ def load_config():
     """加载 YAML 配置文件。"""
     if not CONFIG_PATH.exists():
         save_config(DEFAULT_CONFIG)
-        return DEFAULT_CONFIG.copy()
+        return {
+            'ini_names': dict(DEFAULT_CONFIG['ini_names']),
+            'user_settings': dict(DEFAULT_CONFIG['user_settings']),
+        }
 
-    with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
-        data = yaml.safe_load(f) or {}
+    with open(CONFIG_PATH, 'r', encoding='utf-8') as file:
+        data = yaml.safe_load(file) or {}
 
     config = {
         'ini_names': dict(DEFAULT_CONFIG['ini_names']),
@@ -91,8 +108,8 @@ def load_config():
 def save_config(config):
     """保存 YAML 配置文件。"""
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
-        yaml.safe_dump(config, f, allow_unicode=True, sort_keys=False)
+    with open(CONFIG_PATH, 'w', encoding='utf-8') as file:
+        yaml.safe_dump(config, file, allow_unicode=True, sort_keys=False)
 
 
 def load_ini_names(config):
@@ -104,9 +121,7 @@ def load_ini_names(config):
 
 
 def check_and_add_table_folder(folder_path):
-    """
-    检查文件夹内是否有 table 和 w3x2lni 文件夹，如果有则自动添加 table 层级
-    """
+    """检查文件夹内是否有 table 和 w3x2lni 文件夹，如果有则自动添加 table 层级。"""
     if not folder_path or not os.path.isdir(folder_path):
         return folder_path
 
@@ -119,270 +134,158 @@ def check_and_add_table_folder(folder_path):
     return folder_path
 
 
-class ConverterApp:
-    """转换工具主应用类"""
+class ConverterApi:
+    """暴露给 WebView 前端的桥接接口。"""
 
-    def __init__(self, root):
-        self.root = root
-        self.root.title("INI-Excel 转换工具")
-        self.root.geometry("680x460")
-        self.root.resizable(False, False)
-
-        screen_width = root.winfo_screenwidth()
-        screen_height = root.winfo_screenheight()
-        x = (screen_width - 680) // 2
-        y = (screen_height - 460) // 2
-        root.geometry(f"680x460+{x}+{y}")
-
+    def __init__(self):
         self.config = load_config()
         self.ini_names = load_ini_names(self.config)
 
-        self.input_path = tk.StringVar()
-        self.output_path = tk.StringVar()
-        self.output_filename = tk.StringVar()
-        self.conversion_type = tk.StringVar(value="ini_to_excel")
+    def _refresh_config(self):
+        self.config = load_config()
+        self.ini_names = load_ini_names(self.config)
 
-        self._restore_settings()
-        self.create_widgets()
-
-    def _restore_settings(self):
-        """恢复上次的用户设置。"""
-        user_settings = self.config.get('user_settings', {})
-        self.input_path.set(user_settings.get('input_path', ''))
-        self.output_path.set(user_settings.get('output_path', ''))
-        self.output_filename.set(user_settings.get('output_filename', 'output'))
-        self.conversion_type.set(user_settings.get('conversion_type', 'ini_to_excel'))
-
-    def _save_settings(self):
-        """保存当前用户设置到配置文件。"""
+    def _save_user_settings(self, input_path: str, output_path: str, output_filename: str, conversion_type: str):
         self.config['user_settings'] = {
-            'input_path': self.input_path.get(),
-            'output_path': self.output_path.get(),
-            'output_filename': self.output_filename.get().strip() or 'output',
-            'conversion_type': self.conversion_type.get(),
+            'input_path': input_path,
+            'output_path': output_path,
+            'output_filename': output_filename.strip() or 'output',
+            'conversion_type': conversion_type,
         }
         save_config(self.config)
 
-    def create_widgets(self):
-        """创建界面组件。"""
-        main_frame = tk.Frame(self.root, padx=20, pady=15)
-        main_frame.pack(fill=tk.BOTH, expand=True)
+    def get_initial_state(self, payload: Dict[str, Any] | None = None):
+        """返回初始界面状态。"""
+        _ = payload
+        self._refresh_config()
+        user_settings = self.config.get('user_settings', {})
+        return {
+            'input_path': user_settings.get('input_path', ''),
+            'output_path': user_settings.get('output_path', ''),
+            'output_filename': user_settings.get('output_filename', 'output'),
+            'conversion_type': user_settings.get('conversion_type', 'ini_to_excel'),
+        }
 
-        type_frame = tk.LabelFrame(main_frame, text="转换类型", padx=10, pady=10)
-        type_frame.pack(fill=tk.X, pady=(0, 15))
-
-        tk.Radiobutton(
-            type_frame,
-            text="INI 转 Excel",
-            variable=self.conversion_type,
-            value="ini_to_excel",
-            command=self.on_type_changed
-        ).pack(side=tk.LEFT, padx=10)
-
-        tk.Radiobutton(
-            type_frame,
-            text="Excel 转 INI",
-            variable=self.conversion_type,
-            value="excel_to_ini",
-            command=self.on_type_changed
-        ).pack(side=tk.LEFT, padx=10)
-
-        input_frame = tk.LabelFrame(main_frame, text="输入路径（相对项目根目录）", padx=10, pady=10)
-        input_frame.pack(fill=tk.X, pady=(0, 15))
-
-        self.input_entry = tk.Entry(input_frame, textvariable=self.input_path, width=58, state='readonly', readonlybackground='white')
-        self.input_entry.pack(side=tk.LEFT, fill=tk.X, expand=True)
-
-        self.input_btn = tk.Button(
-            input_frame,
-            text="选择文件夹",
-            command=self.select_input_folder,
-            width=12
-        )
-        self.input_btn.pack(side=tk.LEFT, padx=(10, 5))
-
-        self.input_file_btn = tk.Button(
-            input_frame,
-            text="选择文件",
-            command=self.select_input_file,
-            width=10
-        )
-        self.input_file_btn.pack(side=tk.LEFT)
-
-        output_frame = tk.LabelFrame(main_frame, text="输出设置", padx=10, pady=10)
-        output_frame.pack(fill=tk.X, pady=(0, 15))
-
-        output_path_frame = tk.Frame(output_frame)
-        output_path_frame.pack(fill=tk.X, pady=(0, 10))
-
-        tk.Label(output_path_frame, text="输出目录:").pack(side=tk.LEFT)
-        self.output_entry = tk.Entry(output_path_frame, textvariable=self.output_path, width=50, state='readonly', readonlybackground='white')
-        self.output_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(10, 0))
-
-        output_browse_btn = tk.Button(
-            output_path_frame,
-            text="浏览",
-            command=self.select_output_folder,
-            width=10
-        )
-        output_browse_btn.pack(side=tk.LEFT, padx=(10, 0))
-
-        filename_frame = tk.Frame(output_frame)
-        filename_frame.pack(fill=tk.X)
-
-        tk.Label(filename_frame, text="文件名:").pack(side=tk.LEFT)
-        self.filename_entry = tk.Entry(filename_frame, textvariable=self.output_filename, width=40)
-        self.filename_entry.pack(side=tk.LEFT, padx=(10, 10))
-
-        self.ext_label = tk.Label(filename_frame, text=".xlsx")
-        self.ext_label.pack(side=tk.LEFT)
-
-        btn_frame = tk.Frame(main_frame)
-        btn_frame.pack(fill=tk.X, pady=(20, 0))
-
-        self.convert_btn = tk.Button(
-            btn_frame,
-            text="开始转换",
-            command=self.do_convert,
-            bg="#27ae60",
-            fg="white",
-            font=("Microsoft YaHei", 11, "bold"),
-            width=20,
-            height=2
-        )
-        self.convert_btn.pack(side=tk.LEFT, padx=10)
-
-        tk.Button(
-            btn_frame,
-            text="退出",
-            command=self._on_closing,
-            width=12,
-            height=2
-        ).pack(side=tk.LEFT, padx=10)
-
-        self.status_var = tk.StringVar(value="就绪")
-        status_frame = tk.Frame(self.root, bg="#ecf0f1", height=35)
-        status_frame.pack(fill=tk.X, side=tk.BOTTOM)
-        status_frame.pack_propagate(False)
-
-        status_label = tk.Label(
-            status_frame,
-            textvariable=self.status_var,
-            bg="#ecf0f1",
-            fg="#7f8c8d",
-            font=("Microsoft YaHei", 9)
-        )
-        status_label.pack(pady=8)
-
-        self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
-        self.on_type_changed()
-
-    def _on_closing(self):
-        """窗口关闭时保存设置。"""
-        self._save_settings()
-        self.root.quit()
-
-    def on_type_changed(self):
-        """转换类型改变时的处理。"""
-        if self.conversion_type.get() == "ini_to_excel":
-            self.ext_label.config(text=".xlsx")
-            self.input_btn.config(text="选择文件夹")
-        else:
-            self.ext_label.config(text=".ini")
-            self.input_btn.config(text="选择文件夹")
-
-    def select_input_folder(self):
+    def pick_input_folder(self, payload: Dict[str, Any] | None = None):
         """选择输入文件夹。"""
-        initial_dir = resolve_config_path(self.input_path.get()) if self.input_path.get() else str(BASE_DIR)
-        folder = filedialog.askdirectory(title="选择输入文件夹", initialdir=initial_dir)
-        if folder:
-            folder = check_and_add_table_folder(folder)
-            self.input_path.set(normalize_relative_path(folder))
+        _ = payload
+        initial_dir = resolve_config_path(self.config.get('user_settings', {}).get('input_path', '')) or str(BASE_DIR)
+        result = window.create_file_dialog(webview.FOLDER_DIALOG, directory=initial_dir)
+        if result:
+            selected = check_and_add_table_folder(result[0])
+            return {'path': normalize_relative_path(selected)}
+        return {'path': None}
 
-    def select_input_file(self):
+    def pick_input_file(self, payload: Dict[str, Any] | None = None):
         """选择输入文件。"""
-        initial_dir = resolve_config_path(self.input_path.get()) if self.input_path.get() else str(BASE_DIR)
-        if self.conversion_type.get() == "ini_to_excel":
-            filetypes = [("INI 文件", "*.ini"), ("所有文件", "*.*")]
-            title = "选择 INI 文件"
+        payload = payload or {}
+        conversion_type = payload.get('conversion_type', 'ini_to_excel')
+        initial_dir = resolve_config_path(self.config.get('user_settings', {}).get('input_path', '')) or str(BASE_DIR)
+
+        if conversion_type == 'ini_to_excel':
+            file_types = ('INI 文件 (*.ini)', 'All files (*.*)')
         else:
-            filetypes = [("Excel 文件", "*.xlsx *.xls"), ("所有文件", "*.*")]
-            title = "选择 Excel 文件"
+            file_types = ('Excel 文件 (*.xlsx;*.xls)', 'All files (*.*)')
 
-        file = filedialog.askopenfilename(title=title, filetypes=filetypes, initialdir=initial_dir)
-        if file:
-            self.input_path.set(normalize_relative_path(file))
+        result = window.create_file_dialog(
+            webview.OPEN_DIALOG,
+            directory=initial_dir,
+            allow_multiple=False,
+            file_types=[file_types],
+        )
+        if result:
+            return {'path': normalize_relative_path(result[0])}
+        return {'path': None}
 
-    def select_output_folder(self):
+    def pick_output_folder(self, payload: Dict[str, Any] | None = None):
         """选择输出文件夹。"""
-        initial_dir = resolve_config_path(self.output_path.get()) if self.output_path.get() else str(BASE_DIR)
-        folder = filedialog.askdirectory(title="选择输出文件夹", initialdir=initial_dir)
-        if folder:
-            self.output_path.set(normalize_relative_path(folder))
+        _ = payload
+        initial_dir = resolve_config_path(self.config.get('user_settings', {}).get('output_path', '')) or str(BASE_DIR)
+        result = window.create_file_dialog(webview.FOLDER_DIALOG, directory=initial_dir)
+        if result:
+            return {'path': normalize_relative_path(result[0])}
+        return {'path': None}
 
-    def do_convert(self):
+    def run_conversion(self, payload: Dict[str, Any] | None = None):
         """执行转换。"""
-        input_rel = self.input_path.get().strip()
-        output_rel = self.output_path.get().strip()
-        filename = self.output_filename.get().strip()
+        payload = payload or {}
+        input_rel = (payload.get('input_path') or '').strip()
+        output_rel = (payload.get('output_path') or '').strip()
+        output_filename = (payload.get('output_filename') or '').strip()
+        conversion_type = (payload.get('conversion_type') or 'ini_to_excel').strip()
 
         if not input_rel:
-            messagebox.showwarning("警告", "请选择输入文件/文件夹")
-            return
+            return {'success': False, 'message': '请选择输入文件/文件夹'}
         if not output_rel:
-            messagebox.showwarning("警告", "请选择输出文件夹")
-            return
-        if not filename:
-            messagebox.showwarning("警告", "请输入输出文件名")
-            return
+            return {'success': False, 'message': '请选择输出文件夹'}
+        if not output_filename:
+            return {'success': False, 'message': '请输入输出文件名'}
 
         input_path = resolve_config_path(input_rel)
         output_path = resolve_config_path(output_rel)
 
         if not os.path.exists(input_path):
-            messagebox.showerror("错误", f"输入路径不存在：{input_path}")
-            return
+            return {'success': False, 'message': f'输入路径不存在：{input_path}'}
 
         os.makedirs(output_path, exist_ok=True)
 
-        ext = '.xlsx' if self.conversion_type.get() == "ini_to_excel" else '.ini'
-        output_file = os.path.join(output_path, filename + ext)
+        ext = '.xlsx' if conversion_type == 'ini_to_excel' else '.ini'
+        output_file = os.path.join(output_path, output_filename + ext)
         output_file = get_unique_filename(output_file)
 
         try:
-            if self.conversion_type.get() == "ini_to_excel":
-                self.status_var.set("正在转换 INI 到 Excel...")
-                self.root.update()
+            self._refresh_config()
+            if conversion_type == 'ini_to_excel':
                 ini_to_excel(input_path, output_file, self.ini_names)
-                messagebox.showinfo("完成", f"Excel 文件已创建:\n{output_file}")
+                result_message = f'Excel 文件已创建：{normalize_relative_path(output_file)}'
             else:
-                self.status_var.set("正在转换 Excel 到 INI...")
-                self.root.update()
                 excel_to_ini(input_path, output_file)
-                messagebox.showinfo("完成", f"INI 文件已创建:\n{output_file}")
-            self.status_var.set("转换完成")
-        except Exception as e:
-            messagebox.showerror("错误", f"转换失败：{str(e)}")
-            self.status_var.set("转换失败")
+                result_message = f'INI 文件已创建：{normalize_relative_path(output_file)}'
+
+            self._save_user_settings(input_rel, output_rel, output_filename, conversion_type)
+            return {'success': True, 'message': result_message, 'output_file': normalize_relative_path(output_file)}
+        except Exception as exc:
+            return {'success': False, 'message': f'转换失败：{str(exc)}'}
+
+    def close_window(self, payload: Dict[str, Any] | None = None):
+        """关闭窗口。"""
+        _ = payload
+        if window is not None:
+            window.destroy()
+        return {'success': True}
 
 
-def show_welcome_window():
-    """显示主窗口。"""
-    root = tk.Tk()
-    ConverterApp(root)
-    root.mainloop()
+def ensure_webui_exists():
+    """确保 Web UI 入口文件存在。"""
+    if not WEBUI_INDEX.exists():
+        raise FileNotFoundError(f'未找到 Web UI 文件：{WEBUI_INDEX}')
 
 
 def main():
     """主函数。"""
-    config = load_config()
-    input_path = config.get('user_settings', {}).get('input_path', './rundata/input')
-    out_path = config.get('user_settings', {}).get('output_path', './rundata/output')
+    ensure_webui_exists()
 
-    print(f"输入路径：{input_path}")
-    print(f"输出路径：{out_path}")
-    show_welcome_window()
+    api = ConverterApi()
+    user_settings = api.get_initial_state()
+
+    print(f"运行根目录：{BASE_DIR}")
+    print(f"资源目录：{RESOURCE_DIR}")
+    print(f"输入路径：{user_settings['input_path']}")
+    print(f"输出路径：{user_settings['output_path']}")
+    print('启动 WebView 界面...')
+
+    global window
+    window = webview.create_window(
+        'INI-Excel 转换工具',
+        url=WEBUI_INDEX.as_uri(),
+        js_api=api,
+        width=1120,
+        height=820,
+        min_size=(980, 700),
+        text_select=True,
+    )
+    webview.start()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
