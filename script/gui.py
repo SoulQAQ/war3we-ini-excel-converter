@@ -7,6 +7,7 @@ INI 与 Excel 文件互转工具 WebView 界面
 
 import os
 import sys
+import webbrowser
 from pathlib import Path
 from typing import Any, Dict
 
@@ -34,6 +35,9 @@ else:
 BASE_DIR = APP_DIR
 CONFIG_PATH = BASE_DIR / 'config' / 'setting.yaml'
 WEBUI_INDEX = RESOURCE_DIR / 'webui' / 'index.html'
+HELP_PAGE = RESOURCE_DIR / 'webui' / 'help.html'
+GITHUB_URL = 'https://github.com/SoulQAQ/war3we-ini-excel-converter'
+W3X2LNI_DOWNLOAD_URL = 'https://github.com/sumneko/w3x2lni'
 
 
 DEFAULT_CONFIG = {
@@ -52,7 +56,13 @@ DEFAULT_CONFIG = {
         'output_path': './rundata/output',
         'output_filename': 'output',
         'conversion_type': 'ini_to_excel',
+        'w3x2lni_path': '',
     },
+    'ui_tips': [
+        '建议优先使用已拆解完成的 table 目录做通用规则验证。',
+        '若要直接选择 .w3x 地图，请先在设置中配置 w3x2lni 路径。',
+        '输出文件名无需手动输入扩展名，程序会自动补全。',
+    ],
 }
 
 
@@ -91,6 +101,7 @@ def load_config():
         return {
             'ini_names': dict(DEFAULT_CONFIG['ini_names']),
             'user_settings': dict(DEFAULT_CONFIG['user_settings']),
+            'ui_tips': list(DEFAULT_CONFIG['ui_tips']),
         }
 
     with open(CONFIG_PATH, 'r', encoding='utf-8') as file:
@@ -99,9 +110,15 @@ def load_config():
     config = {
         'ini_names': dict(DEFAULT_CONFIG['ini_names']),
         'user_settings': dict(DEFAULT_CONFIG['user_settings']),
+        'ui_tips': list(DEFAULT_CONFIG['ui_tips']),
     }
     config['ini_names'].update(data.get('ini_names', {}) or {})
     config['user_settings'].update(data.get('user_settings', {}) or {})
+
+    ui_tips = data.get('ui_tips')
+    if isinstance(ui_tips, list) and ui_tips:
+        config['ui_tips'] = [str(item) for item in ui_tips if str(item).strip()]
+
     return config
 
 
@@ -134,6 +151,22 @@ def check_and_add_table_folder(folder_path):
     return folder_path
 
 
+def find_w2l_path_from_w3x2lni(selected_path: str):
+    """根据用户选择的 w3x2lni.exe 推导并验证 w2l.exe 路径。"""
+    if not selected_path:
+        return None
+
+    selected = Path(selected_path)
+    if selected.name.lower() != 'w3x2lni.exe':
+        return None
+
+    w2l_path = selected.with_name('w2l.exe')
+    if not w2l_path.exists():
+        return None
+
+    return str(w2l_path.resolve())
+
+
 class ConverterApi:
     """暴露给 WebView 前端的桥接接口。"""
 
@@ -146,12 +179,14 @@ class ConverterApi:
         self.ini_names = load_ini_names(self.config)
 
     def _save_user_settings(self, input_path: str, output_path: str, output_filename: str, conversion_type: str):
-        self.config['user_settings'] = {
+        user_settings = dict(self.config.get('user_settings') or {})
+        user_settings.update({
             'input_path': input_path,
             'output_path': output_path,
             'output_filename': output_filename.strip() or 'output',
             'conversion_type': conversion_type,
-        }
+        })
+        self.config['user_settings'] = user_settings
         save_config(self.config)
 
     def get_initial_state(self, payload: Dict[str, Any] | None = None):
@@ -159,11 +194,17 @@ class ConverterApi:
         _ = payload
         self._refresh_config()
         user_settings = self.config.get('user_settings', {})
+        w3x2lni_path = user_settings.get('w3x2lni_path', '')
         return {
             'input_path': user_settings.get('input_path', ''),
             'output_path': user_settings.get('output_path', ''),
             'output_filename': user_settings.get('output_filename', 'output'),
             'conversion_type': user_settings.get('conversion_type', 'ini_to_excel'),
+            'w3x2lni_path': w3x2lni_path,
+            'has_w3x2lni': bool(w3x2lni_path),
+            'ui_tips': self.config.get('ui_tips', []),
+            'help_url': HELP_PAGE.as_uri() if HELP_PAGE.exists() else GITHUB_URL,
+            'github_url': GITHUB_URL,
         }
 
     def pick_input_folder(self, payload: Dict[str, Any] | None = None):
@@ -183,7 +224,14 @@ class ConverterApi:
         initial_dir = resolve_config_path(self.config.get('user_settings', {}).get('input_path', '')) or str(BASE_DIR)
 
         if conversion_type == 'ini_to_excel':
-            file_types = ('INI 文件 (*.ini)', 'All files (*.*)')
+            user_settings = self.config.get('user_settings', {})
+            if not user_settings.get('w3x2lni_path'):
+                return {
+                    'path': None,
+                    'success': False,
+                    'message': '请先在设置中配置 w3x2lni 路径，之后才能直接选择地图文件。',
+                }
+            file_types = ('Warcraft III 地图 (*.w3x)', 'All files (*.*)')
         else:
             file_types = ('Excel 文件 (*.xlsx;*.xls)', 'All files (*.*)')
 
@@ -194,8 +242,8 @@ class ConverterApi:
             file_types=[file_types],
         )
         if result:
-            return {'path': normalize_relative_path(result[0])}
-        return {'path': None}
+            return {'path': normalize_relative_path(result[0]), 'success': True}
+        return {'path': None, 'success': True}
 
     def pick_output_folder(self, payload: Dict[str, Any] | None = None):
         """选择输出文件夹。"""
@@ -205,6 +253,75 @@ class ConverterApi:
         if result:
             return {'path': normalize_relative_path(result[0])}
         return {'path': None}
+
+    def get_settings(self, payload: Dict[str, Any] | None = None):
+        """返回设置面板所需配置。"""
+        _ = payload
+        self._refresh_config()
+        user_settings = self.config.get('user_settings', {})
+        return {
+            'w3x2lni_path': user_settings.get('w3x2lni_path', ''),
+        }
+
+    def pick_w3x2lni_path(self, payload: Dict[str, Any] | None = None):
+        """让用户选择 w3x2lni.exe，并返回对应的 w2l.exe 路径。"""
+        _ = payload
+        configured = self.config.get('user_settings', {}).get('w3x2lni_path', '')
+        initial_dir = str(Path(configured).resolve().parent) if configured else str(BASE_DIR)
+
+        result = window.create_file_dialog(
+            webview.OPEN_DIALOG,
+            directory=initial_dir,
+            allow_multiple=False,
+            file_types=[('w3x2lni 程序 (w3x2lni.exe)', 'w3x2lni.exe')],
+        )
+        if not result:
+            return {'success': False, 'cancelled': True}
+
+        selected_path = result[0]
+        w2l_path = find_w2l_path_from_w3x2lni(selected_path)
+        if not w2l_path:
+            return {
+                'success': False,
+                'cancelled': False,
+                'message': '未在同目录找到 w2l.exe，当前 w3x2lni 可能已损坏。',
+                'download_url': W3X2LNI_DOWNLOAD_URL,
+            }
+
+        return {
+            'success': True,
+            'cancelled': False,
+            'selected_path': normalize_relative_path(selected_path),
+            'w3x2lni_path': normalize_relative_path(w2l_path),
+        }
+
+    def save_settings(self, payload: Dict[str, Any] | None = None):
+        """保存设置。"""
+        payload = payload or {}
+        self._refresh_config()
+
+        raw_path = (payload.get('w3x2lni_path') or '').strip()
+        user_settings = dict(self.config.get('user_settings') or {})
+        user_settings['w3x2lni_path'] = raw_path
+        self.config['user_settings'] = user_settings
+        save_config(self.config)
+
+        return {
+            'success': True,
+            'w3x2lni_path': raw_path,
+            'has_w3x2lni': bool(raw_path),
+            'message': '设置已保存。',
+        }
+
+    def open_external_link(self, payload: Dict[str, Any] | None = None):
+        """打开外部链接。"""
+        payload = payload or {}
+        url = (payload.get('url') or '').strip()
+        if not url:
+            return {'success': False, 'message': '缺少要打开的链接。'}
+
+        webbrowser.open(url)
+        return {'success': True}
 
     def run_conversion(self, payload: Dict[str, Any] | None = None):
         """执行转换。"""

@@ -12,3 +12,8 @@ user_settings:
   output_path: rundata/output
   output_filename: output
   conversion_type: ini_to_excel
+  w3x2lni_path: ''
+ui_tips:
+  - 建议优先使用已拆解完成的 table 目录做通用规则验证。
+  - 若要直接选择 .w3x 地图，请先在设置中配置 w3x2lni 路径。
+  - 输出文件名无需手动输入扩展名，程序会自动补全。

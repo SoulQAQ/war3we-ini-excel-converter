@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>帮助文档 - INI Excel 转换工具</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f4f6;
+      --panel: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --primary: #2563eb;
+      --primary-soft: #eff6ff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      line-height: 1.75;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 28px 20px 40px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .lead {
+      margin: 0 0 24px;
+      color: var(--muted);
+    }
+
+    h2 {
+      margin-top: 28px;
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    ul, ol {
+      padding-left: 22px;
+    }
+
+    code {
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: #f3f4f6;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 13px;
+    }
+
+    .tip {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: var(--primary-soft);
+      border: 1px solid #bfdbfe;
+      border-radius: 12px;
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="panel">
+      <h1>INI ⇄ Excel 转换工具帮助</h1>
+      <p class="lead">本页提供当前 WebView 界面的基础使用说明，后续可继续补充更详细的转换规则文档。</p>
+
+      <h2>基本流程</h2>
+      <ol>
+        <li>选择转换类型：<code>INI → Excel</code> 或 <code>Excel → INI</code></li>
+        <li>通过界面按钮选择输入来源</li>
+        <li>选择输出目录，并填写输出文件名</li>
+        <li>点击“开始转换”执行任务</li>
+      </ol>
+
+      <h2>输入选择说明</h2>
+      <ul>
+        <li><strong>选择地图文件夹</strong>：适合直接选择已经拆解好的地图目录，程序会优先识别其中的 <code>table</code> 子目录。</li>
+        <li><strong>选择地图</strong>：用于后续直接选择 <code>.w3x</code> 地图文件，此功能依赖已正确配置 <code>w3x2lni</code>。</li>
+      </ul>
+
+      <h2>w3x2lni 配置说明</h2>
+      <ul>
+        <li>设置时需要用户先选择 <code>w3x2lni.exe</code></li>
+        <li>程序会自动检查同目录下是否存在 <code>w2l.exe</code></li>
+        <li>真正写入配置文件的是 <code>w2l.exe</code> 的完整路径</li>
+      </ul>
+
+      <div class="tip">
+        若你需要查看项目源码、问题反馈或最新进展，请访问
+        <a href="https://github.com/SoulQAQ/war3we-ini-excel-converter" target="_blank">GitHub 仓库</a>。
+      </div>
+    </div>
+  </div>
+</body>
+</html>

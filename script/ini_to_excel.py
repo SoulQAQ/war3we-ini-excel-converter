@@ -34,6 +34,10 @@ def get_ini_files(folder_path):
     return ini_files
 
 
+MULTILINE_ELEMENT_SEPARATOR = '----'
+
+
+
 def decode_ini_value(value):
     """将 INI 原始值解码为适合 Excel 展示的纯文本。"""
     if not isinstance(value, str):
@@ -46,7 +50,9 @@ def decode_ini_value(value):
         if inner:
             matches = re.findall(r'\[=\[(.*?)\]=\]', inner, flags=re.DOTALL)
             if matches:
-                return '\n\n'.join(match.strip('\n\r') for match in matches)
+                return f'\n{MULTILINE_ELEMENT_SEPARATOR}\n'.join(
+                    match.strip('\n\r') for match in matches
+                )
         return inner
 
     if stripped.startswith('[=[') and stripped.endswith(']=]'):
