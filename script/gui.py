@@ -35,6 +35,8 @@ else:
 BASE_DIR = APP_DIR
 CONFIG_PATH = BASE_DIR / 'config' / 'setting.yaml'
 WEBUI_INDEX = RESOURCE_DIR / 'webui' / 'index.html'
+FAVICON_PATH = RESOURCE_DIR / 'favicon.ico'
+LOGO_PATH = RESOURCE_DIR / 'logo.jpg'
 HELP_URL = 'http://soul2.cn/read/doc/war3we-ini-excel-converter/help.html'
 GITHUB_URL = 'https://github.com/SoulQAQ/war3we-ini-excel-converter'
 W3X2LNI_DOWNLOAD_URL = 'https://github.com/sumneko/w3x2lni'
@@ -401,6 +403,11 @@ def main():
         min_size=(980, 650),
         text_select=True,
     )
+    if FAVICON_PATH.exists():
+        try:
+            window.icon = str(FAVICON_PATH)
+        except Exception:
+            pass
     webview.start()
 
 

@@ -60,6 +60,8 @@ echo [信息] 开始打包...
   --name "%APP_NAME%" ^
   --add-data "webui;webui" ^
   --add-data "config;config" ^
+  --add-data "app.ico;." ^
+  --icon "app.ico" ^
   "%MAIN_SCRIPT%"
 
 if errorlevel 1 (
