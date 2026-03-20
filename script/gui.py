@@ -35,7 +35,7 @@ else:
 BASE_DIR = APP_DIR
 CONFIG_PATH = BASE_DIR / 'config' / 'setting.yaml'
 WEBUI_INDEX = RESOURCE_DIR / 'webui' / 'index.html'
-HELP_PAGE = RESOURCE_DIR / 'webui' / 'help.html'
+HELP_URL = 'http://soul2.cn/read/doc/war3we-ini-excel-converter/help.html'
 GITHUB_URL = 'https://github.com/SoulQAQ/war3we-ini-excel-converter'
 W3X2LNI_DOWNLOAD_URL = 'https://github.com/sumneko/w3x2lni'
 
@@ -203,7 +203,7 @@ class ConverterApi:
             'w3x2lni_path': w3x2lni_path,
             'has_w3x2lni': bool(w3x2lni_path),
             'ui_tips': self.config.get('ui_tips', []),
-            'help_url': HELP_PAGE.as_uri() if HELP_PAGE.exists() else GITHUB_URL,
+            'help_url': HELP_URL,
             'github_url': GITHUB_URL,
         }
 
@@ -231,9 +231,9 @@ class ConverterApi:
                     'success': False,
                     'message': '请先在设置中配置 w3x2lni 路径，之后才能直接选择地图文件。',
                 }
-            file_types = ('Warcraft III 地图 (*.w3x)', 'All files (*.*)')
+            file_types = 'Warcraft III 地图 (*.w3x)'
         else:
-            file_types = ('Excel 文件 (*.xlsx;*.xls)', 'All files (*.*)')
+            file_types = 'Excel 文件 (*.xlsx;*.xls)'
 
         result = window.create_file_dialog(
             webview.OPEN_DIALOG,
@@ -273,7 +273,7 @@ class ConverterApi:
             webview.OPEN_DIALOG,
             directory=initial_dir,
             allow_multiple=False,
-            file_types=[('w3x2lni 程序 (w3x2lni.exe)', 'w3x2lni.exe')],
+            file_types=['Executable Files (*.exe)'],
         )
         if not result:
             return {'success': False, 'cancelled': True}
@@ -397,8 +397,8 @@ def main():
         url=WEBUI_INDEX.as_uri(),
         js_api=api,
         width=1120,
-        height=820,
-        min_size=(980, 700),
+        height=660,
+        min_size=(980, 650),
         text_select=True,
     )
     webview.start()
@@ -406,3 +406,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

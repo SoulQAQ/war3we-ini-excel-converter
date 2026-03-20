@@ -7,22 +7,27 @@
   <style>
     :root {
       color-scheme: light;
-      --bg: #f3f4f6;
+      --bg: #eef2f7;
       --panel: #ffffff;
-      --panel-soft: #f9fafb;
+      --panel-soft: #f8fafc;
       --text: #111827;
       --muted: #6b7280;
-      --line: #e5e7eb;
+      --line: #dbe3ef;
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
       --success: #16a34a;
       --danger: #dc2626;
-      --shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-      --radius: 16px;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      --radius: 14px;
     }
 
     * {
       box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
     }
 
     body {
@@ -30,40 +35,32 @@
       min-height: 100vh;
       font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
       color: var(--text);
-      background: var(--bg);
+      background:
+        radial-gradient(circle at top right, rgba(37, 99, 235, 0.07), transparent 28%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
     }
 
     .app {
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
-    .panel {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-
-    .panel-body {
-      padding: 24px;
+      min-height: 100vh;
+      padding: 22px 24px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
     }
 
     .topbar {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 18px;
     }
 
     .title-wrap h1 {
-      margin: 0 0 4px;
-      font-size: 28px;
+      margin: 0 0 6px;
+      font-size: 30px;
       font-weight: 700;
-      color: #111827;
+      color: #0f172a;
+      letter-spacing: 0.2px;
     }
 
     .title-wrap p {
@@ -84,20 +81,22 @@
       align-items: center;
       gap: 8px;
       border: 1px solid var(--line);
-      background: #fff;
+      background: rgba(255, 255, 255, 0.92);
       color: #1f2937;
       border-radius: 12px;
       padding: 10px 14px;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s ease, border-color 0.2s ease, transform 0.08s ease;
+      transition: background 0.2s ease, border-color 0.2s ease, transform 0.08s ease, box-shadow 0.2s ease;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
     }
 
     .icon-btn:hover {
-      background: #f9fafb;
-      border-color: #d1d5db;
+      background: #ffffff;
+      border-color: #c6d2e1;
       transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.07);
     }
 
     .icon {
@@ -106,16 +105,20 @@
       font-size: 15px;
     }
 
-    .section {
-      margin-bottom: 18px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: 14px;
-      background: var(--panel-soft);
+    .workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
     }
 
-    .section:last-child {
-      margin-bottom: 0;
+    .section {
+      padding: 18px;
+      border: 1px solid rgba(219, 227, 239, 0.95);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(4px);
     }
 
     .section-title {
@@ -192,7 +195,7 @@
 
     input[type="text"] {
       width: 100%;
-      border: 1px solid #d1d5db;
+      border: 1px solid #d1d9e6;
       border-radius: 12px;
       padding: 11px 14px;
       font-size: 14px;
@@ -207,8 +210,8 @@
     }
 
     input[type="text"][disabled] {
-      background: #f3f4f6;
-      color: #6b7280;
+      background: #f4f7fb;
+      color: #607087;
       cursor: not-allowed;
     }
 
@@ -223,7 +226,7 @@
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.08s ease, background 0.2s ease, opacity 0.2s ease;
+      transition: transform 0.08s ease, background 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
     }
 
     button:hover {
@@ -234,11 +237,13 @@
       opacity: 0.55;
       cursor: not-allowed;
       transform: none;
+      box-shadow: none;
     }
 
     .btn-primary {
       background: var(--primary);
       color: white;
+      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
     }
 
     .btn-primary:hover {
@@ -246,38 +251,18 @@
     }
 
     .btn-secondary {
-      background: #e5e7eb;
+      background: #e8edf4;
       color: #1f2937;
     }
 
     .btn-secondary:hover {
-      background: #dbe1e8;
+      background: #dde5ef;
     }
 
     .btn-success {
       background: var(--success);
       color: white;
-    }
-
-    .tips {
-      margin: 0;
-      padding-left: 18px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.7;
-    }
-
-    .tips li + li {
-      margin-top: 6px;
-    }
-
-    .actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-top: 22px;
-      flex-wrap: wrap;
+      box-shadow: 0 8px 18px rgba(22, 163, 74, 0.2);
     }
 
     .status {
@@ -338,6 +323,72 @@
     .tooltip-wrap:focus-within .tooltip {
       opacity: 1;
       transform: translateY(0);
+    }
+
+    .bottom-bar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .tips-bar {
+      display: flex;
+      align-items: center;
+      min-height: 52px;
+      padding: 12px 16px;
+      border: 1px solid rgba(191, 219, 254, 0.95);
+      border-radius: 14px;
+      background: linear-gradient(90deg, rgba(219, 234, 254, 0.9), rgba(239, 246, 255, 0.96));
+      color: #1e3a8a;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .tips-label {
+      flex: 0 0 auto;
+      margin-right: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1d4ed8;
+      letter-spacing: 0.2px;
+    }
+
+    .tip-display {
+      min-width: 0;
+      font-size: 13px;
+      line-height: 1.6;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      opacity: 1;
+    }
+
+    .tip-display.flash {
+      animation: tipFlash 0.8s ease;
+    }
+
+    @keyframes tipFlash {
+      0% {
+        opacity: 0.1;
+        transform: translateY(4px);
+      }
+      45% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .actions {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
     .dialog-mask {
@@ -409,6 +460,15 @@
       line-height: 1.7;
     }
 
+    .settings-help a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .settings-help a:hover {
+      text-decoration: underline;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -418,9 +478,11 @@
         padding: 16px;
       }
 
-      .topbar {
+      .topbar,
+      .bottom-bar {
         flex-direction: column;
-        align-items: flex-start;
+        display: flex;
+        align-items: stretch;
       }
 
       .top-actions {
@@ -433,81 +495,86 @@
       .settings-row {
         grid-template-columns: 1fr;
       }
+
+      .tip-display {
+        white-space: normal;
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="panel">
-      <div class="panel-body">
-        <div class="topbar">
-          <div class="title-wrap">
-            <h1>INI ⇄ Excel 转换工具</h1>
-            <p>Warcraft III 结构数据与 Excel 互转</p>
-          </div>
-          <div class="top-actions">
-            <button id="settingsBtn" class="icon-btn" type="button"><span class="icon">⚙</span><span>设置</span></button>
-            <button id="helpBtn" class="icon-btn" type="button"><span class="icon">❓</span><span>帮助</span></button>
-            <button id="githubBtn" class="icon-btn" type="button"><span class="icon">🔗</span><span>GitHub</span></button>
-          </div>
-        </div>
+    <div class="topbar">
+      <div class="title-wrap">
+        <h1>INI ⇄ Excel 转换工具</h1>
+        <p>Warcraft III 结构数据与 Excel 互转</p>
+      </div>
+      <div class="top-actions">
+        <button id="settingsBtn" class="icon-btn" type="button"><span class="icon">⚙</span><span>设置</span></button>
+        <button id="helpBtn" class="icon-btn" type="button"><span class="icon">❓</span><span>帮助</span></button>
+        <button id="githubBtn" class="icon-btn" type="button"><span class="icon">🔗</span><span>GitHub</span></button>
+      </div>
+    </div>
 
-        <div class="section">
-          <h2 class="section-title">转换类型</h2>
-          <div class="mode-group">
-            <label class="mode-option">
-              <input type="radio" name="conversionType" value="ini_to_excel" checked />
-              <div class="mode-card">
-                <strong>INI 转 Excel</strong>
-                <span>适用于一个 INI 文件、table 目录，或后续接入地图文件流程。</span>
-              </div>
-            </label>
-            <label class="mode-option">
-              <input type="radio" name="conversionType" value="excel_to_ini" />
-              <div class="mode-card">
-                <strong>Excel 转 INI</strong>
-                <span>将编辑后的 Excel 内容回写为对应的 INI 结构数据。</span>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <div class="section">
-          <h2 class="section-title">输入与输出</h2>
-          <div class="field">
-            <label for="inputPath">输入路径</label>
-            <input id="inputPath" class="path-input" type="text" placeholder="请通过右侧按钮选择" disabled />
-            <button id="pickInputFolderBtn" class="btn-secondary" type="button">选择地图文件夹</button>
-            <div class="tooltip-wrap">
-              <button id="pickInputFileBtn" class="btn-secondary" type="button">选择地图</button>
-              <div id="mapPickTooltip" class="tooltip">请先在设置中配置 w3x2lni 路径，之后才能直接选择 .w3x 地图文件。</div>
+    <div class="workspace">
+      <div class="section">
+        <h2 class="section-title">转换类型</h2>
+        <div class="mode-group">
+          <label class="mode-option">
+            <input type="radio" name="conversionType" value="ini_to_excel" checked />
+            <div class="mode-card">
+              <strong>INI 转 Excel</strong>
+              <span>适用于一个 INI 文件、table 目录，或后续接入地图文件流程。</span>
             </div>
-          </div>
+          </label>
+          <label class="mode-option">
+            <input type="radio" name="conversionType" value="excel_to_ini" />
+            <div class="mode-card">
+              <strong>Excel 转 INI</strong>
+              <span>将编辑后的 Excel 内容回写为对应的 INI 结构数据。</span>
+            </div>
+          </label>
+        </div>
+      </div>
 
-          <div class="field single-action">
-            <label for="outputPath">输出目录</label>
-            <input id="outputPath" class="path-input" type="text" placeholder="请通过右侧按钮选择" disabled />
-            <button id="pickOutputBtn" class="btn-secondary" type="button">浏览</button>
-          </div>
-
-          <div class="field single-action">
-            <label for="outputFilename">输出文件名</label>
-            <input id="outputFilename" type="text" placeholder="output" />
-            <div id="extLabel" class="status">.xlsx</div>
+      <div class="section">
+        <h2 class="section-title">输入与输出</h2>
+        <div class="field">
+          <label for="inputPath">输入路径</label>
+          <input id="inputPath" class="path-input" type="text" placeholder="请通过右侧按钮选择" disabled />
+          <button id="pickInputFolderBtn" class="btn-secondary" type="button">选择地图文件夹</button>
+          <div class="tooltip-wrap">
+            <button id="pickInputFileBtn" class="btn-secondary" type="button">选择地图</button>
+            <div id="mapPickTooltip" class="tooltip">请先在设置中配置 w3x2lni 路径，之后才能直接选择 .w3x 地图文件。</div>
           </div>
         </div>
 
-        <div class="section">
-          <h2 class="section-title">使用建议</h2>
-          <ul id="tipsList" class="tips"></ul>
+        <div class="field single-action">
+          <label for="outputPath">输出目录</label>
+          <input id="outputPath" class="path-input" type="text" placeholder="请通过右侧按钮选择" disabled />
+          <button id="pickOutputBtn" class="btn-secondary" type="button">浏览</button>
         </div>
 
+        <div class="field single-action">
+          <label for="outputFilename">输出文件名</label>
+          <input id="outputFilename" type="text" placeholder="output" />
+          <div id="extLabel" class="status">.xlsx</div>
+        </div>
+      </div>
+
+      <div class="bottom-bar">
+        <div id="tipsBar" class="tips-bar" aria-live="polite">
+          <div class="tips-label">使用建议</div>
+          <div id="tipDisplay" class="tip-display">正在加载建议...</div>
+        </div>
         <div class="actions">
           <div id="status" class="status">就绪</div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="convertBtn" class="btn-success" type="button">开始转换</button>
-            <button id="closeBtn" class="btn-primary" type="button">退出</button>
-          </div>
+          <button id="convertBtn" class="btn-success" type="button">开始转换</button>
+          <button id="closeBtn" class="btn-primary" type="button">退出</button>
         </div>
       </div>
     </div>
@@ -517,7 +584,6 @@
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
       <div class="dialog-header">
         <h2 id="settingsTitle" class="dialog-title">设置</h2>
-        <p class="dialog-desc">当前先提供 w3x2lni 路径配置。请选择 <strong>w3x2lni.exe</strong>，程序会自动转换并保存同目录下的 <strong>w2l.exe</strong> 路径。</p>
       </div>
       <div class="dialog-body">
         <div class="settings-row">
@@ -526,7 +592,7 @@
           <button id="pickW3x2lniBtn" class="btn-secondary" type="button">选择程序</button>
         </div>
         <div class="settings-help">
-          说明：如果用户选择的 <code>w3x2lni.exe</code> 所在目录中缺少 <code>w2l.exe</code>，程序会提示该工具损坏，并可跳转到官方仓库重新下载。
+          如果提示w3x2lni损坏，请到<a href="https://github.com/sumneko/w3x2lni" target="_blank">w3x2lni</a>重新下载。
         </div>
       </div>
       <div class="dialog-footer">
@@ -543,8 +609,10 @@
       hasW3x2lni: false,
       w3x2lniPath: '',
       githubUrl: 'https://github.com/SoulQAQ/war3we-ini-excel-converter',
-      helpUrl: 'https://github.com/SoulQAQ/war3we-ini-excel-converter',
-      uiTips: []
+      helpUrl: 'http://soul2.cn/read/doc/war3we-ini-excel-converter/help.html',
+      uiTips: [],
+      tipIndex: 0,
+      tipTimer: null
     };
 
     const els = {
@@ -553,7 +621,7 @@
       outputFilename: document.getElementById('outputFilename'),
       extLabel: document.getElementById('extLabel'),
       status: document.getElementById('status'),
-      tipsList: document.getElementById('tipsList'),
+      tipDisplay: document.getElementById('tipDisplay'),
       pickInputFolderBtn: document.getElementById('pickInputFolderBtn'),
       pickInputFileBtn: document.getElementById('pickInputFileBtn'),
       pickOutputBtn: document.getElementById('pickOutputBtn'),
@@ -575,13 +643,32 @@
       els.status.className = 'status' + (type === 'success' ? ' success' : type === 'error' ? ' error' : '');
     }
 
-    function renderTips() {
-      els.tipsList.innerHTML = '';
-      (state.uiTips || []).forEach((tip) => {
-        const li = document.createElement('li');
-        li.textContent = tip;
-        els.tipsList.appendChild(li);
-      });
+    function renderCurrentTip(withFlash = true) {
+      const tips = state.uiTips || [];
+      const text = tips.length ? tips[state.tipIndex % tips.length] : '建议优先使用已拆解完成的 table 目录做通用规则验证。';
+      els.tipDisplay.textContent = text;
+      if (!withFlash) {
+        return;
+      }
+      els.tipDisplay.classList.remove('flash');
+      void els.tipDisplay.offsetWidth;
+      els.tipDisplay.classList.add('flash');
+    }
+
+    function startTipRotation() {
+      if (state.tipTimer) {
+        clearInterval(state.tipTimer);
+        state.tipTimer = null;
+      }
+      state.tipIndex = 0;
+      renderCurrentTip(false);
+      if ((state.uiTips || []).length <= 1) {
+        return;
+      }
+      state.tipTimer = window.setInterval(() => {
+        state.tipIndex = (state.tipIndex + 1) % state.uiTips.length;
+        renderCurrentTip(true);
+      }, 3600);
     }
 
     function updateMapPickerState() {
@@ -641,7 +728,7 @@
         const checkedRadio = document.querySelector(`input[name="conversionType"][value="${state.conversionType}"]`);
         if (checkedRadio) checkedRadio.checked = true;
 
-        renderTips();
+        startTipRotation();
         syncModeUI();
       } catch (error) {
         setStatus(error.message || String(error), 'error');
@@ -742,7 +829,7 @@
     });
 
     els.githubBtn.addEventListener('click', async () => {
-      await openLink('https://github.com/SoulQAQ/war3we-ini-excel-converter');
+      await openLink(state.githubUrl);
     });
 
     els.pickW3x2lniBtn.addEventListener('click', async () => {
@@ -783,10 +870,14 @@
       }
     });
 
-    els.settingsDialogMask.addEventListener('click', (event) => {
-      if (event.target === els.settingsDialogMask) {
-        closeSettingsDialog();
-      }
+    document.querySelectorAll('.settings-help a').forEach((link) => {
+      link.addEventListener('click', async (event) => {
+        event.preventDefault();
+        const url = link.getAttribute('href');
+        if (url) {
+          await openLink(url);
+        }
+      });
     });
 
     window.addEventListener('pywebviewready', bootstrap);
