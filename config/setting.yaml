@@ -1,18 +1,16 @@
 ini_names:
   ability.ini: 技能
   buff.ini: 魔法效果
-  imp.ini: 导入文件
   item.ini: 物品
-  misc.ini: 平衡常数
   unit.ini: 单位
   upgrade.ini: 科技
-  w3i.ini: 地图属性
 user_settings:
   input_path: ../Attack and defense 0.1.36/table
   output_path: rundata/output
   output_filename: output
   conversion_type: ini_to_excel
   w3x2lni_path: ../w3x2lni-2.7.3/w2l.exe
+  enable_calc_formula_detection: true
 ui_tips:
 - 建议优先使用已拆解完成的 table 目录做通用规则验证。
 - 若要直接选择 .w3x 地图，请先在设置中配置 w3x2lni 路径。

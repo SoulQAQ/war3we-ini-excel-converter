@@ -591,6 +591,14 @@
           <input id="w3x2lniPath" class="path-input" type="text" placeholder="未配置" disabled />
           <button id="pickW3x2lniBtn" class="btn-secondary" type="button">选择程序</button>
         </div>
+        <div class="settings-row">
+          <label for="enableCalcFormulaDetection">公式识别</label>
+          <input id="enableCalcFormulaDetectionText" class="path-input" type="text" value="导出时自动识别等差数列为 calc@A±B" disabled />
+          <label style="display:flex;align-items:center;gap:8px;justify-self:start;cursor:pointer;">
+            <input id="enableCalcFormulaDetection" type="checkbox" />
+            <span>启用</span>
+          </label>
+        </div>
         <div class="settings-help">
           如果提示w3x2lni损坏，请到<a href="https://github.com/sumneko/w3x2lni" target="_blank">w3x2lni</a>重新下载。
         </div>
@@ -608,6 +616,7 @@
       ext: '.xlsx',
       hasW3x2lni: false,
       w3x2lniPath: '',
+      enableCalcFormulaDetection: true,
       githubUrl: 'https://github.com/SoulQAQ/war3we-ini-excel-converter',
       helpUrl: 'http://soul2.cn/read/doc/war3we-ini-excel-converter/help.html',
       uiTips: [],
@@ -633,6 +642,7 @@
       mapPickTooltip: document.getElementById('mapPickTooltip'),
       settingsDialogMask: document.getElementById('settingsDialogMask'),
       w3x2lniPath: document.getElementById('w3x2lniPath'),
+      enableCalcFormulaDetection: document.getElementById('enableCalcFormulaDetection'),
       pickW3x2lniBtn: document.getElementById('pickW3x2lniBtn'),
       cancelSettingsBtn: document.getElementById('cancelSettingsBtn'),
       saveSettingsBtn: document.getElementById('saveSettingsBtn')
@@ -690,6 +700,7 @@
       els.settingsDialogMask.classList.add('show');
       els.settingsDialogMask.setAttribute('aria-hidden', 'false');
       els.w3x2lniPath.value = state.w3x2lniPath || '';
+      els.enableCalcFormulaDetection.checked = !!state.enableCalcFormulaDetection;
     }
 
     function closeSettingsDialog() {
@@ -721,6 +732,7 @@
         state.conversionType = config.conversion_type || 'ini_to_excel';
         state.hasW3x2lni = !!config.has_w3x2lni;
         state.w3x2lniPath = config.w3x2lni_path || '';
+        state.enableCalcFormulaDetection = config.enable_calc_formula_detection !== false;
         state.uiTips = Array.isArray(config.ui_tips) ? config.ui_tips : [];
         state.helpUrl = config.help_url || state.helpUrl;
         state.githubUrl = config.github_url || state.githubUrl;
@@ -818,6 +830,7 @@
       try {
         const settings = await callApi('get_settings');
         state.w3x2lniPath = settings.w3x2lni_path || '';
+        state.enableCalcFormulaDetection = settings.enable_calc_formula_detection !== false;
         openSettingsDialog();
       } catch (error) {
         setStatus(error.message || String(error), 'error');
@@ -858,10 +871,12 @@
     els.saveSettingsBtn.addEventListener('click', async () => {
       try {
         const result = await callApi('save_settings', {
-          w3x2lni_path: els.w3x2lniPath.value
+          w3x2lni_path: els.w3x2lniPath.value,
+          enable_calc_formula_detection: els.enableCalcFormulaDetection.checked
         });
         state.w3x2lniPath = result.w3x2lni_path || '';
         state.hasW3x2lni = !!result.has_w3x2lni;
+        state.enableCalcFormulaDetection = result.enable_calc_formula_detection !== false;
         updateMapPickerState();
         setStatus(result.message || '设置已保存。', 'success');
         closeSettingsDialog();

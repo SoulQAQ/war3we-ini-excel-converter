@@ -46,12 +46,9 @@ DEFAULT_CONFIG = {
     'ini_names': {
         'ability.ini': '技能',
         'buff.ini': '魔法效果',
-        'imp.ini': '导入文件',
         'item.ini': '物品',
-        'misc.ini': '平衡常数',
         'unit.ini': '单位',
         'upgrade.ini': '科技',
-        'w3i.ini': '地图属性',
     },
     'user_settings': {
         'input_path': './rundata/input',
@@ -59,6 +56,7 @@ DEFAULT_CONFIG = {
         'output_filename': 'output',
         'conversion_type': 'ini_to_excel',
         'w3x2lni_path': '',
+        'enable_calc_formula_detection': True,
     },
     'ui_tips': [
         '建议优先使用已拆解完成的 table 目录做通用规则验证。',
@@ -204,6 +202,7 @@ class ConverterApi:
             'conversion_type': user_settings.get('conversion_type', 'ini_to_excel'),
             'w3x2lni_path': w3x2lni_path,
             'has_w3x2lni': bool(w3x2lni_path),
+            'enable_calc_formula_detection': bool(user_settings.get('enable_calc_formula_detection', True)),
             'ui_tips': self.config.get('ui_tips', []),
             'help_url': HELP_URL,
             'github_url': GITHUB_URL,
@@ -263,6 +262,7 @@ class ConverterApi:
         user_settings = self.config.get('user_settings', {})
         return {
             'w3x2lni_path': user_settings.get('w3x2lni_path', ''),
+            'enable_calc_formula_detection': bool(user_settings.get('enable_calc_formula_detection', True)),
         }
 
     def pick_w3x2lni_path(self, payload: Dict[str, Any] | None = None):
@@ -303,8 +303,10 @@ class ConverterApi:
         self._refresh_config()
 
         raw_path = (payload.get('w3x2lni_path') or '').strip()
+        enable_calc_formula_detection = bool(payload.get('enable_calc_formula_detection', True))
         user_settings = dict(self.config.get('user_settings') or {})
         user_settings['w3x2lni_path'] = raw_path
+        user_settings['enable_calc_formula_detection'] = enable_calc_formula_detection
         self.config['user_settings'] = user_settings
         save_config(self.config)
 
@@ -312,6 +314,7 @@ class ConverterApi:
             'success': True,
             'w3x2lni_path': raw_path,
             'has_w3x2lni': bool(raw_path),
+            'enable_calc_formula_detection': enable_calc_formula_detection,
             'message': '设置已保存。',
         }
 
@@ -354,8 +357,11 @@ class ConverterApi:
 
         try:
             self._refresh_config()
+            export_options = {
+                'enable_calc_formula_detection': bool(self.config.get('user_settings', {}).get('enable_calc_formula_detection', True))
+            }
             if conversion_type == 'ini_to_excel':
-                ini_to_excel(input_path, output_file, self.ini_names)
+                ini_to_excel(input_path, output_file, self.ini_names, export_options)
                 result_message = f'Excel 文件已创建：{normalize_relative_path(output_file)}'
             else:
                 excel_to_ini(input_path, output_file)
@@ -408,9 +414,8 @@ def main():
             window.icon = str(FAVICON_PATH)
         except Exception:
             pass
-    webview.start()
+    webview.start(debug=False)
 
 
 if __name__ == '__main__':
     main()
-
