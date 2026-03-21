@@ -212,6 +212,46 @@ def render_multi_elements(prop_name, elements, export_options):
     return ', '.join(cleaned)
 
 
+
+def get_multi_element_count(value):
+    if not isinstance(value, str):
+        return 0
+
+    stripped = value.strip()
+    if not stripped:
+        return 0
+
+    if stripped.startswith('{') and stripped.endswith('}'):
+        inner = stripped[1:-1].strip()
+        if not inner:
+            return 1
+
+        matches = re.findall(r'\[=\[(.*?)\]=\]', inner, flags=re.DOTALL)
+        if matches:
+            return len(matches)
+
+        top_level = split_top_level_csv(inner)
+        return len(top_level)
+
+    top_level = split_top_level_csv(value)
+    if len(top_level) > 1:
+        return len(top_level)
+
+    return 1 if stripped else 0
+
+
+
+def ensure_levels_for_cost(prop_values):
+    if 'levels' in prop_values or 'Cost' not in prop_values:
+        return None
+
+    element_count = get_multi_element_count(prop_values['Cost'])
+    if element_count <= 1:
+        return None
+
+    return str(element_count)
+
+
 def decode_ini_value(prop_name, value, export_options=None):
     """将 INI 原始值解码为适合 Excel 展示的纯文本。"""
     if not isinstance(value, str):
@@ -546,11 +586,14 @@ def create_excel_with_sheets(ini_folder, output_path, ini_names=None, export_opt
         for row_idx, obj in enumerate(objects, start=3):
             ws.cell(row=row_idx, column=1, value=obj['id'])
             prop_values = {p['name']: p['value'] for p in obj['properties']}
+            inferred_levels = ensure_levels_for_cost(prop_values)
 
             if 'Name' in prop_values:
                 ws.cell(row=row_idx, column=2, value=decode_ini_value('Name', prop_values['Name'], export_options))
             if 'levels' in prop_values:
                 ws.cell(row=row_idx, column=3, value=decode_ini_value('levels', prop_values['levels'], export_options))
+            elif inferred_levels is not None:
+                ws.cell(row=row_idx, column=3, value=inferred_levels)
             ws.cell(row=row_idx, column=4, value=obj['parent'])
 
             for col_idx, prop_name in enumerate(ordered_props):

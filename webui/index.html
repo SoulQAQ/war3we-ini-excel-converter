@@ -448,13 +448,88 @@
 
     .settings-row {
       display: grid;
-      grid-template-columns: 90px minmax(0, 1fr) auto;
+      grid-template-columns: 90px minmax(0, 1fr);
       gap: 10px;
       align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .settings-row--input {
+      grid-template-columns: 90px minmax(0, 1fr) auto;
+    }
+
+    .settings-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      justify-self: start;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      margin-left: 0;
+    }
+
+    .settings-toggle input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .settings-switch {
+      position: relative;
+      width: 46px;
+      height: 26px;
+      border-radius: 999px;
+      background: #d1d5db;
+      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+      transition: background-color 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .settings-switch::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+      transition: transform 0.2s ease;
+    }
+
+    .settings-toggle input:checked + .settings-switch {
+      background: var(--primary);
+    }
+
+    .settings-toggle input:checked + .settings-switch::after {
+      transform: translateX(20px);
+    }
+
+    .settings-toggle-text {
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    .settings-inline-help {
+      margin: -2px 0 14px 100px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .settings-row--toggle {
+      align-items: start;
+    }
+
+    .settings-row--toggle .settings-toggle {
+      grid-column: 2;
+      justify-self: start;
     }
 
     .settings-help {
-      margin-top: 10px;
+      margin-top: 12px;
       color: var(--muted);
       font-size: 12px;
       line-height: 1.7;
@@ -586,18 +661,21 @@
         <h2 id="settingsTitle" class="dialog-title">设置</h2>
       </div>
       <div class="dialog-body">
-        <div class="settings-row">
+        <div class="settings-row settings-row--input">
           <label for="w3x2lniPath">w3x2lni</label>
           <input id="w3x2lniPath" class="path-input" type="text" placeholder="未配置" disabled />
           <button id="pickW3x2lniBtn" class="btn-secondary" type="button">选择程序</button>
         </div>
-        <div class="settings-row">
+        <div class="settings-row settings-row--toggle">
           <label for="enableCalcFormulaDetection">公式识别</label>
-          <input id="enableCalcFormulaDetectionText" class="path-input" type="text" value="导出时自动识别等差数列为 calc@A±B" disabled />
-          <label style="display:flex;align-items:center;gap:8px;justify-self:start;cursor:pointer;">
+          <label class="settings-toggle" for="enableCalcFormulaDetection">
             <input id="enableCalcFormulaDetection" type="checkbox" />
-            <span>启用</span>
+            <span class="settings-switch" aria-hidden="true"></span>
+            <span id="enableCalcFormulaDetectionText" class="settings-toggle-text">启用</span>
           </label>
+        </div>
+        <div class="settings-inline-help">
+          导出时自动识别等差数列为 calc@A±B。
         </div>
         <div class="settings-help">
           如果提示w3x2lni损坏，请到<a href="https://github.com/sumneko/w3x2lni" target="_blank">w3x2lni</a>重新下载。
@@ -643,6 +721,7 @@
       settingsDialogMask: document.getElementById('settingsDialogMask'),
       w3x2lniPath: document.getElementById('w3x2lniPath'),
       enableCalcFormulaDetection: document.getElementById('enableCalcFormulaDetection'),
+      enableCalcFormulaDetectionText: document.getElementById('enableCalcFormulaDetectionText'),
       pickW3x2lniBtn: document.getElementById('pickW3x2lniBtn'),
       cancelSettingsBtn: document.getElementById('cancelSettingsBtn'),
       saveSettingsBtn: document.getElementById('saveSettingsBtn')
@@ -696,11 +775,24 @@
       setStatus('就绪');
     }
 
+    function formatW3x2lniDisplay(path) {
+      if (!path) {
+        return '';
+      }
+      return path.replace(/[\\/]w2l\.exe$/i, '').replace(/[\\/]$/, '');
+    }
+
+    function syncCalcFormulaDetectionToggle() {
+      const enabled = !!els.enableCalcFormulaDetection.checked;
+      els.enableCalcFormulaDetectionText.textContent = enabled ? '启用' : '禁用';
+    }
+
     function openSettingsDialog() {
       els.settingsDialogMask.classList.add('show');
       els.settingsDialogMask.setAttribute('aria-hidden', 'false');
-      els.w3x2lniPath.value = state.w3x2lniPath || '';
+      els.w3x2lniPath.value = formatW3x2lniDisplay(state.w3x2lniPath || '');
       els.enableCalcFormulaDetection.checked = !!state.enableCalcFormulaDetection;
+      syncCalcFormulaDetectionToggle();
     }
 
     function closeSettingsDialog() {
@@ -860,18 +952,21 @@
           return;
         }
 
-        els.w3x2lniPath.value = result.w3x2lni_path || '';
+        state.w3x2lniPath = result.w3x2lni_path || '';
+        els.w3x2lniPath.value = formatW3x2lniDisplay(state.w3x2lniPath);
       } catch (error) {
         setStatus(error.message || String(error), 'error');
       }
     });
+
+    els.enableCalcFormulaDetection.addEventListener('change', syncCalcFormulaDetectionToggle);
 
     els.cancelSettingsBtn.addEventListener('click', closeSettingsDialog);
 
     els.saveSettingsBtn.addEventListener('click', async () => {
       try {
         const result = await callApi('save_settings', {
-          w3x2lni_path: els.w3x2lniPath.value,
+          w3x2lni_path: state.w3x2lniPath,
           enable_calc_formula_detection: els.enableCalcFormulaDetection.checked
         });
         state.w3x2lniPath = result.w3x2lni_path || '';
