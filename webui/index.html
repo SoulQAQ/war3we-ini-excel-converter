@@ -345,6 +345,15 @@
       overflow: hidden;
     }
 
+    .workspace-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
     .tips-label {
       flex: 0 0 auto;
       margin-right: 12px;
@@ -603,7 +612,7 @@
             <input type="radio" name="conversionType" value="ini_to_excel" checked />
             <div class="mode-card">
               <strong>INI 转 Excel</strong>
-              <span>适用于一个 INI 文件、table 目录，或后续接入地图文件流程。</span>
+              <span>将一个地图文件夹或地图文件转换为 Excel 表格进行编辑。</span>
             </div>
           </label>
           <label class="mode-option">
@@ -617,9 +626,9 @@
       </div>
 
       <div class="section">
-        <h2 class="section-title">输入与输出</h2>
+        <h2 class="section-title">工作区</h2>
         <div class="field">
-          <label for="inputPath">输入路径</label>
+          <label for="inputPath">地图文件夹</label>
           <input id="inputPath" class="path-input" type="text" placeholder="请通过右侧按钮选择" disabled />
           <button id="pickInputFolderBtn" class="btn-secondary" type="button">选择地图文件夹</button>
           <div class="tooltip-wrap">
@@ -627,17 +636,10 @@
             <div id="mapPickTooltip" class="tooltip">请先在设置中配置 w3x2lni 路径，之后才能直接选择 .w3x 地图文件。</div>
           </div>
         </div>
-
-        <div class="field single-action">
-          <label for="outputPath">输出目录</label>
-          <input id="outputPath" class="path-input" type="text" placeholder="请通过右侧按钮选择" disabled />
-          <button id="pickOutputBtn" class="btn-secondary" type="button">浏览</button>
-        </div>
-
-        <div class="field single-action">
-          <label for="outputFilename">输出文件名</label>
-          <input id="outputFilename" type="text" placeholder="output" />
-          <div id="extLabel" class="status">.xlsx</div>
+        <div class="workspace-actions">
+          <div id="status" class="status">就绪</div>
+          <button id="convertBtn" class="btn-success" type="button">开始转换</button>
+          <button id="editExcelBtn" class="btn-secondary hidden" type="button">编辑表格</button>
         </div>
       </div>
 
@@ -647,8 +649,6 @@
           <div id="tipDisplay" class="tip-display">正在加载建议...</div>
         </div>
         <div class="actions">
-          <div id="status" class="status">就绪</div>
-          <button id="convertBtn" class="btn-success" type="button">开始转换</button>
           <button id="closeBtn" class="btn-primary" type="button">退出</button>
         </div>
       </div>
@@ -666,6 +666,9 @@
           <input id="w3x2lniPath" class="path-input" type="text" placeholder="未配置" disabled />
           <button id="pickW3x2lniBtn" class="btn-secondary" type="button">选择程序</button>
         </div>
+        <div class="settings-inline-help">
+          如果提示w3x2lni损坏，请到<a href="https://github.com/sumneko/w3x2lni" target="_blank">w3x2lni</a>重新下载。
+        </div>
         <div class="settings-row settings-row--toggle">
           <label for="enableCalcFormulaDetection">公式识别</label>
           <label class="settings-toggle" for="enableCalcFormulaDetection">
@@ -676,9 +679,6 @@
         </div>
         <div class="settings-inline-help">
           导出时自动识别等差数列为 calc@A±B。
-        </div>
-        <div class="settings-help">
-          如果提示w3x2lni损坏，请到<a href="https://github.com/sumneko/w3x2lni" target="_blank">w3x2lni</a>重新下载。
         </div>
       </div>
       <div class="dialog-footer">
@@ -694,25 +694,25 @@
       ext: '.xlsx',
       hasW3x2lni: false,
       w3x2lniPath: '',
+      w3x2lniPathAbs: '',
       enableCalcFormulaDetection: true,
       githubUrl: 'https://github.com/SoulQAQ/war3we-ini-excel-converter',
       helpUrl: 'http://soul2.cn/read/doc/war3we-ini-excel-converter/help.html',
       uiTips: [],
       tipIndex: 0,
-      tipTimer: null
+      tipTimer: null,
+      xlsxExists: false,
+      xlsxPath: ''
     };
 
     const els = {
       inputPath: document.getElementById('inputPath'),
-      outputPath: document.getElementById('outputPath'),
-      outputFilename: document.getElementById('outputFilename'),
-      extLabel: document.getElementById('extLabel'),
       status: document.getElementById('status'),
       tipDisplay: document.getElementById('tipDisplay'),
       pickInputFolderBtn: document.getElementById('pickInputFolderBtn'),
       pickInputFileBtn: document.getElementById('pickInputFileBtn'),
-      pickOutputBtn: document.getElementById('pickOutputBtn'),
       convertBtn: document.getElementById('convertBtn'),
+      editExcelBtn: document.getElementById('editExcelBtn'),
       closeBtn: document.getElementById('closeBtn'),
       settingsBtn: document.getElementById('settingsBtn'),
       helpBtn: document.getElementById('helpBtn'),
@@ -768,7 +768,6 @@
 
     function syncModeUI() {
       state.ext = state.conversionType === 'ini_to_excel' ? '.xlsx' : '.ini';
-      els.extLabel.textContent = state.ext;
       els.pickInputFolderBtn.textContent = state.conversionType === 'ini_to_excel' ? '选择地图文件夹' : '选择 Excel 文件';
       els.pickInputFileBtn.textContent = state.conversionType === 'ini_to_excel' ? '选择地图' : '选择 Excel';
       updateMapPickerState();
@@ -790,7 +789,8 @@
     function openSettingsDialog() {
       els.settingsDialogMask.classList.add('show');
       els.settingsDialogMask.setAttribute('aria-hidden', 'false');
-      els.w3x2lniPath.value = formatW3x2lniDisplay(state.w3x2lniPath || '');
+      // 显示绝对路径
+      els.w3x2lniPath.value = formatW3x2lniDisplay(state.w3x2lniPathAbs || state.w3x2lniPath || '');
       els.enableCalcFormulaDetection.checked = !!state.enableCalcFormulaDetection;
       syncCalcFormulaDetectionToggle();
     }
@@ -815,12 +815,24 @@
       }
     }
 
+    function updateEditExcelButton() {
+      const showBtn = state.conversionType === 'ini_to_excel' && state.xlsxExists && state.xlsxPath;
+      els.editExcelBtn.classList.toggle('hidden', !showBtn);
+    }
+
+    async function openInExplorer(path) {
+      try {
+        await callApi('open_in_explorer', { path });
+      } catch (error) {
+        setStatus(error.message || String(error), 'error');
+      }
+    }
+
     async function bootstrap() {
       try {
         const config = await callApi('get_initial_state');
-        els.inputPath.value = config.input_path || '';
-        els.outputPath.value = config.output_path || '';
-        els.outputFilename.value = config.output_filename || 'output';
+        // 显示绝对路径
+        els.inputPath.value = config.input_path_abs || config.input_path || '';
         state.conversionType = config.conversion_type || 'ini_to_excel';
         state.hasW3x2lni = !!config.has_w3x2lni;
         state.w3x2lniPath = config.w3x2lni_path || '';
@@ -828,12 +840,15 @@
         state.uiTips = Array.isArray(config.ui_tips) ? config.ui_tips : [];
         state.helpUrl = config.help_url || state.helpUrl;
         state.githubUrl = config.github_url || state.githubUrl;
+        state.xlsxExists = !!config.xlsx_exists;
+        state.xlsxPath = config.xlsx_path || '';
 
         const checkedRadio = document.querySelector(`input[name="conversionType"][value="${state.conversionType}"]`);
         if (checkedRadio) checkedRadio.checked = true;
 
         startTipRotation();
         syncModeUI();
+        updateEditExcelButton();
       } catch (error) {
         setStatus(error.message || String(error), 'error');
       }
@@ -851,14 +866,22 @@
         if (state.conversionType === 'excel_to_ini') {
           const result = await callApi('pick_input_file', { conversion_type: state.conversionType });
           if (result && result.path !== undefined) {
-            els.inputPath.value = result.path || '';
+            // 显示绝对路径
+            els.inputPath.value = result.path_abs || result.path || '';
+            state.xlsxExists = !!result.xlsx_exists;
+            state.xlsxPath = result.xlsx_path || '';
+            updateEditExcelButton();
           }
           return;
         }
 
         const result = await callApi('pick_input_folder');
         if (result && result.path !== undefined) {
-          els.inputPath.value = result.path || '';
+          // 显示绝对路径
+          els.inputPath.value = result.path_abs || result.path || '';
+          state.xlsxExists = !!result.xlsx_exists;
+          state.xlsxPath = result.xlsx_path || '';
+          updateEditExcelButton();
         }
       } catch (error) {
         setStatus(error.message || String(error), 'error');
@@ -874,18 +897,18 @@
           return;
         }
         if (result && result.path !== undefined) {
-          els.inputPath.value = result.path || '';
+          // 显示绝对路径
+          els.inputPath.value = result.path_abs || result.path || '';
+          state.xlsxExists = !!result.xlsx_exists;
+          state.xlsxPath = result.xlsx_path || '';
+          updateEditExcelButton();
         }
-      } catch (error) {
-        setStatus(error.message || String(error), 'error');
-      }
-    });
-
-    els.pickOutputBtn.addEventListener('click', async () => {
-      try {
-        const result = await callApi('pick_output_folder');
-        if (result && result.path !== undefined) {
-          els.outputPath.value = result.path || '';
+        if (result && result.converted_folder) {
+          // 显示绝对路径
+          els.inputPath.value = result.path_abs || result.converted_folder;
+          state.xlsxExists = !!result.xlsx_exists;
+          state.xlsxPath = result.xlsx_path || '';
+          updateEditExcelButton();
         }
       } catch (error) {
         setStatus(error.message || String(error), 'error');
@@ -898,15 +921,41 @@
       try {
         const result = await callApi('run_conversion', {
           input_path: els.inputPath.value,
-          output_path: els.outputPath.value,
-          output_filename: els.outputFilename.value,
           conversion_type: state.conversionType
         });
-        setStatus(result.message || '转换完成', result.success ? 'success' : 'error');
+        if (result && result.need_confirm && result.message) {
+          const choice = window.confirm(result.message + '\n\n点击"确定"覆盖旧文件，点击"取消"将自动重命名旧文件。');
+          const confirmResult = await callApi('confirm_overwrite', {
+            input_path: els.inputPath.value,
+            conversion_type: state.conversionType,
+            overwrite: choice
+          });
+          setStatus(confirmResult.message || '转换完成', confirmResult.success ? 'success' : 'error');
+          // 更新xlsx状态
+          if (confirmResult.success) {
+            state.xlsxExists = !!confirmResult.xlsx_exists;
+            state.xlsxPath = confirmResult.xlsx_path || '';
+            updateEditExcelButton();
+          }
+        } else {
+          setStatus(result.message || '转换完成', result.success ? 'success' : 'error');
+          // 更新xlsx状态
+          if (result.success) {
+            state.xlsxExists = !!result.xlsx_exists;
+            state.xlsxPath = result.xlsx_path || '';
+            updateEditExcelButton();
+          }
+        }
       } catch (error) {
         setStatus(error.message || String(error), 'error');
       } finally {
         els.convertBtn.disabled = false;
+      }
+    });
+
+    els.editExcelBtn.addEventListener('click', async () => {
+      if (state.xlsxPath) {
+        await openInExplorer(state.xlsxPath);
       }
     });
 
@@ -922,6 +971,7 @@
       try {
         const settings = await callApi('get_settings');
         state.w3x2lniPath = settings.w3x2lni_path || '';
+        state.w3x2lniPathAbs = settings.w3x2lni_path_abs || '';
         state.enableCalcFormulaDetection = settings.enable_calc_formula_detection !== false;
         openSettingsDialog();
       } catch (error) {
@@ -945,7 +995,7 @@
         }
 
         if (!result.success) {
-          const shouldDownload = window.confirm((result.message || 'w3x2lni 已损坏。') + '\n\n点击“确定”前往下载页，点击“取消”返回。');
+          const shouldDownload = window.confirm((result.message || 'w3x2lni 已损坏。') + '\n\n点击"确定"前往下载页，点击"取消"返回。');
           if (shouldDownload && result.download_url) {
             await openLink(result.download_url);
           }
@@ -953,7 +1003,9 @@
         }
 
         state.w3x2lniPath = result.w3x2lni_path || '';
-        els.w3x2lniPath.value = formatW3x2lniDisplay(state.w3x2lniPath);
+        state.w3x2lniPathAbs = result.w3x2lni_path_abs || '';
+        // 显示绝对路径
+        els.w3x2lniPath.value = formatW3x2lniDisplay(state.w3x2lniPathAbs || state.w3x2lniPath);
       } catch (error) {
         setStatus(error.message || String(error), 'error');
       }
