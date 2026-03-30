@@ -9,6 +9,8 @@ user_settings:
   conversion_type: ini_to_excel
   w3x2lni_path: ../../w3x2lni/w2l.exe
   enable_calc_formula_detection: true
+  excel_to_ini_map_path: ''
+  excel_file_path: ''
   output_path: rundata/output
   output_filename: output
 ui_tips:

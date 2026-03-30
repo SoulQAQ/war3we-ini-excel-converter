@@ -770,8 +770,8 @@ def main():
         url=WEBUI_INDEX.as_uri(),
         js_api=api,
         width=1120,
-        height=660,
-        min_size=(980, 650),
+        height=680,
+        min_size=(980, 670),
         text_select=True,
     )
     if FAVICON_PATH.exists():
