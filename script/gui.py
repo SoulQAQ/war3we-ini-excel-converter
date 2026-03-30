@@ -723,6 +723,21 @@ class ConverterApi:
         except Exception as exc:
             return {'success': False, 'message': f'转换失败：{str(exc)}'}
 
+    def save_excel_to_ini_paths(self, payload: Dict[str, Any] | None = None):
+        """保存 Excel 转 INI 的路径配置。"""
+        payload = payload or {}
+        map_path = (payload.get('map_path') or '').strip()
+        excel_path = (payload.get('excel_path') or '').strip()
+        
+        self._refresh_config()
+        user_settings = dict(self.config.get('user_settings') or {})
+        user_settings['excel_to_ini_map_path'] = map_path
+        user_settings['excel_file_path'] = excel_path
+        self.config['user_settings'] = user_settings
+        save_config(self.config)
+        
+        return {'success': True}
+
     def close_window(self, payload: Dict[str, Any] | None = None):
         """关闭窗口。"""
         _ = payload

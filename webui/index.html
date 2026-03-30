@@ -823,7 +823,7 @@
       els.mapPickTooltip.classList.toggle('hidden', !disabled || state.conversionType !== 'ini_to_excel');
     }
 
-    function syncModeUI() {
+    async function syncModeUI() {
       state.ext = state.conversionType === 'ini_to_excel' ? '.xlsx' : '.ini';
       
       // 切换工作区显示
@@ -833,12 +833,32 @@
       } else {
         els.iniToExcelWorkspace.classList.add('hidden');
         els.excelToIniWorkspace.classList.remove('hidden');
+        
+        // 如果 Excel 转 INI 工作区的地图文件夹为空，自动触发恢复
+        if (!state.excelToIniMapPathAbs && els.inputPath.value) {
+          await triggerRestoreMapPath();
+        }
       }
       
       updateMapPickerState();
       updateModeDescriptions();
       setStatus('就绪');
       setStatusExcelToIni('就绪');
+    }
+
+    async function triggerRestoreMapPath() {
+      // 使用 INI 转 Excel 工作区内的地图文件夹
+      const iniToExcelPath = els.inputPath.value;
+      if (iniToExcelPath) {
+        state.excelToIniMapPathAbs = iniToExcelPath;
+        state.excelToIniMapPath = '';
+        els.excelToIniMapPath.value = iniToExcelPath;
+        
+        // 保存配置
+        await saveExcelToIniPaths();
+        
+        await autoDetectExcelFile();
+      }
     }
 
     function formatW3x2lniDisplay(path) {
@@ -1121,6 +1141,18 @@
     });
 
     // Excel 转 INI 相关事件
+    async function saveExcelToIniPaths() {
+      // 保存 Excel 转 INI 的路径配置
+      try {
+        await callApi('save_excel_to_ini_paths', {
+          map_path: state.excelToIniMapPath,
+          excel_path: state.excelFilePath
+        });
+      } catch (error) {
+        // 保存失败不显示错误
+      }
+    }
+
     els.pickExcelToIniMapBtn.addEventListener('click', async () => {
       try {
         const result = await callApi('pick_input_folder');
@@ -1128,6 +1160,9 @@
           state.excelToIniMapPath = result.path || '';
           state.excelToIniMapPathAbs = result.path_abs || '';
           els.excelToIniMapPath.value = state.excelToIniMapPathAbs;
+          
+          // 保存配置
+          await saveExcelToIniPaths();
           
           // 自动检测同名Excel文件
           await autoDetectExcelFile();
@@ -1142,7 +1177,12 @@
       const iniToExcelPath = els.inputPath.value;
       if (iniToExcelPath) {
         state.excelToIniMapPathAbs = iniToExcelPath;
+        state.excelToIniMapPath = ''; // 绝对路径不需要存储相对路径
         els.excelToIniMapPath.value = iniToExcelPath;
+        
+        // 保存配置
+        await saveExcelToIniPaths();
+        
         await autoDetectExcelFile();
       } else {
         setStatusExcelToIni('INI 转 Excel 工作区中没有地图文件夹路径', 'error');
@@ -1156,6 +1196,9 @@
           state.excelFilePath = result.path || '';
           state.excelFilePathAbs = result.path_abs || '';
           els.excelFilePath.value = state.excelFilePathAbs;
+          
+          // 保存配置
+          await saveExcelToIniPaths();
         }
       } catch (error) {
         setStatusExcelToIni(error.message || String(error), 'error');
