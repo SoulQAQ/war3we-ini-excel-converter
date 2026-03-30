@@ -26,10 +26,11 @@ Typical workflow:
 
 This repository is still under active development.
 
-- `INI` → `Excel` conversion is available
-- `Excel` → `INI` conversion is planned / under development
+- `INI` → `Excel` conversion is available and feature-complete
+- `Excel` → `INI` conversion is under active development
 - GUI support is included in [`script/gui.py`](script/gui.py)
 - `w3x2lni` support depends on the installation directory configured in the tool
+- Separate workspaces for INI→Excel and Excel→INI modes with independent path configurations
 
 ## Repository Structure
 

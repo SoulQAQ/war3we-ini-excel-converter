@@ -56,6 +56,9 @@ DEFAULT_CONFIG = {
         'conversion_type': 'ini_to_excel',
         'w3x2lni_path': '',
         'enable_calc_formula_detection': True,
+        # Excel 转 INI 独立配置
+        'excel_to_ini_map_path': '',
+        'excel_file_path': '',
     },
     'ui_tips': [
         '选择地图文件夹后，Excel 将自动输出到同目录下。',
@@ -343,11 +346,18 @@ class ConverterApi:
             xlsx_path = get_output_xlsx_path(input_abs)
             xlsx_exists = os.path.exists(xlsx_path)
 
+        # Excel 转 INI 配置
+        excel_to_ini_map_rel = user_settings.get('excel_to_ini_map_path', '')
+        excel_to_ini_map_abs = resolve_config_path(excel_to_ini_map_rel) if excel_to_ini_map_rel else ''
+        excel_file_rel = user_settings.get('excel_file_path', '')
+        excel_file_abs = resolve_config_path(excel_file_rel) if excel_file_rel else ''
+
         return {
             'input_path': input_rel,
             'input_path_abs': input_abs,
             'conversion_type': user_settings.get('conversion_type', 'ini_to_excel'),
             'w3x2lni_path': w3x2lni_path,
+            'w3x2lni_path_abs': resolve_config_path(w3x2lni_path) if w3x2lni_path else '',
             'has_w3x2lni': bool(w3x2lni_path),
             'enable_calc_formula_detection': bool(user_settings.get('enable_calc_formula_detection', True)),
             'ui_tips': self.config.get('ui_tips', []),
@@ -355,6 +365,11 @@ class ConverterApi:
             'github_url': GITHUB_URL,
             'xlsx_exists': xlsx_exists,
             'xlsx_path': xlsx_path,
+            # Excel 转 INI 配置
+            'excel_to_ini_map_path': excel_to_ini_map_rel,
+            'excel_to_ini_map_path_abs': excel_to_ini_map_abs,
+            'excel_file_path': excel_file_rel,
+            'excel_file_path_abs': excel_file_abs,
         }
 
     def pick_input_folder(self, payload: Dict[str, Any] | None = None):
@@ -626,6 +641,84 @@ class ConverterApi:
                 'output_file': output_file,
                 'xlsx_exists': xlsx_exists,
                 'xlsx_path': output_file,
+            }
+        except Exception as exc:
+            return {'success': False, 'message': f'转换失败：{str(exc)}'}
+
+    def pick_excel_file(self, payload: Dict[str, Any] | None = None):
+        """选择 Excel 文件。"""
+        payload = payload or {}
+        map_folder = payload.get('map_folder', '')
+        initial_dir = map_folder if map_folder and os.path.isdir(map_folder) else str(BASE_DIR)
+        
+        result = window.create_file_dialog(
+            webview.OPEN_DIALOG,
+            directory=initial_dir,
+            allow_multiple=False,
+            file_types=['Excel 文件 (*.xlsx;*.xls)'],
+        )
+        if result:
+            selected = result[0]
+            return {
+                'path': normalize_relative_path(selected),
+                'path_abs': str(Path(selected).resolve()),
+            }
+        return {'path': None}
+
+    def auto_detect_excel_file(self, payload: Dict[str, Any] | None = None):
+        """自动检测地图文件夹内的同名 Excel 文件。"""
+        payload = payload or {}
+        map_folder = payload.get('map_folder', '')
+        if not map_folder or not os.path.isdir(map_folder):
+            return {'excel_path': None}
+        
+        # 获取文件夹名称
+        folder_name = Path(map_folder).name
+        # 如果是 table 目录，使用父目录名称
+        if folder_name.lower() == 'table':
+            folder_name = Path(map_folder).parent.name
+        
+        # 检查同目录下的同名 xlsx 文件
+        parent_dir = Path(map_folder).parent if Path(map_folder).name.lower() == 'table' else Path(map_folder)
+        xlsx_path = parent_dir / f'{folder_name}.xlsx'
+        
+        if xlsx_path.exists():
+            return {
+                'excel_path': str(xlsx_path),
+                'excel_path_rel': normalize_relative_path(str(xlsx_path)),
+            }
+        
+        return {'excel_path': None}
+
+    def run_excel_to_ini_conversion(self, payload: Dict[str, Any] | None = None):
+        """执行 Excel 转 INI 转换。"""
+        payload = payload or {}
+        map_folder = (payload.get('map_folder') or '').strip()
+        excel_file = (payload.get('excel_file') or '').strip()
+        
+        if not map_folder:
+            return {'success': False, 'message': '请选择地图文件夹'}
+        if not excel_file:
+            return {'success': False, 'message': '请选择 Excel 文件'}
+        if not os.path.isdir(map_folder):
+            return {'success': False, 'message': f'地图文件夹不存在：{map_folder}'}
+        if not os.path.isfile(excel_file):
+            return {'success': False, 'message': f'Excel 文件不存在：{excel_file}'}
+        
+        try:
+            self._refresh_config()
+            excel_to_ini(map_folder, excel_file)
+            
+            # 保存配置
+            user_settings = dict(self.config.get('user_settings') or {})
+            user_settings['excel_to_ini_map_path'] = normalize_relative_path(map_folder)
+            user_settings['excel_file_path'] = normalize_relative_path(excel_file)
+            self.config['user_settings'] = user_settings
+            save_config(self.config)
+            
+            return {
+                'success': True,
+                'message': f'INI 文件已写入：{map_folder}',
             }
         except Exception as exc:
             return {'success': False, 'message': f'转换失败：{str(exc)}'}

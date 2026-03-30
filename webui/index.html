@@ -612,20 +612,21 @@
             <input type="radio" name="conversionType" value="ini_to_excel" checked />
             <div class="mode-card">
               <strong>INI 转 Excel</strong>
-              <span>将一个地图文件夹或地图文件转换为 Excel 表格进行编辑。</span>
+              <span id="iniToExcelDesc">将一个地图文件夹转换为 Excel 表格进行编辑。</span>
             </div>
           </label>
           <label class="mode-option">
             <input type="radio" name="conversionType" value="excel_to_ini" />
             <div class="mode-card">
               <strong>Excel 转 INI</strong>
-              <span>将编辑后的 Excel 内容回写为对应的 INI 结构数据。</span>
+              <span id="excelToIniDesc">将编辑后的 Excel 内容回写为对应的 INI 结构数据。</span>
             </div>
           </label>
         </div>
       </div>
 
-      <div class="section">
+      <!-- INI 转 Excel 工作区 -->
+      <div id="iniToExcelWorkspace" class="section">
         <h2 class="section-title">工作区</h2>
         <div class="field">
           <label for="inputPath">地图文件夹</label>
@@ -640,6 +641,26 @@
           <div id="status" class="status">就绪</div>
           <button id="convertBtn" class="btn-success" type="button">开始转换</button>
           <button id="editExcelBtn" class="btn-secondary hidden" type="button">编辑表格</button>
+        </div>
+      </div>
+
+      <!-- Excel 转 INI 工作区 -->
+      <div id="excelToIniWorkspace" class="section hidden">
+        <h2 class="section-title">工作区</h2>
+        <div class="field">
+          <label for="excelToIniMapPath">地图文件夹</label>
+          <input id="excelToIniMapPath" class="path-input" type="text" placeholder="请通过右侧按钮选择" disabled />
+          <button id="pickExcelToIniMapBtn" class="btn-secondary" type="button">选择</button>
+          <button id="restoreMapPathBtn" class="btn-secondary" type="button">恢复</button>
+        </div>
+        <div class="field">
+          <label for="excelFilePath">Excel 文件</label>
+          <input id="excelFilePath" class="path-input" type="text" placeholder="自动检测或手动选择" disabled />
+          <button id="pickExcelFileBtn" class="btn-secondary" type="button">选择</button>
+        </div>
+        <div class="workspace-actions">
+          <div id="statusExcelToIni" class="status">就绪</div>
+          <button id="convertExcelToIniBtn" class="btn-success" type="button">开始转换</button>
         </div>
       </div>
 
@@ -701,8 +722,14 @@
       uiTips: [],
       tipIndex: 0,
       tipTimer: null,
+      // INI 转 Excel 状态
       xlsxExists: false,
-      xlsxPath: ''
+      xlsxPath: '',
+      // Excel 转 INI 状态
+      excelToIniMapPath: '',
+      excelToIniMapPathAbs: '',
+      excelFilePath: '',
+      excelFilePathAbs: ''
     };
 
     const els = {
@@ -724,12 +751,31 @@
       enableCalcFormulaDetectionText: document.getElementById('enableCalcFormulaDetectionText'),
       pickW3x2lniBtn: document.getElementById('pickW3x2lniBtn'),
       cancelSettingsBtn: document.getElementById('cancelSettingsBtn'),
-      saveSettingsBtn: document.getElementById('saveSettingsBtn')
+      saveSettingsBtn: document.getElementById('saveSettingsBtn'),
+      // 转换类型描述
+      iniToExcelDesc: document.getElementById('iniToExcelDesc'),
+      excelToIniDesc: document.getElementById('excelToIniDesc'),
+      // 工作区
+      iniToExcelWorkspace: document.getElementById('iniToExcelWorkspace'),
+      excelToIniWorkspace: document.getElementById('excelToIniWorkspace'),
+      // Excel 转 INI 元素
+      excelToIniMapPath: document.getElementById('excelToIniMapPath'),
+      excelFilePath: document.getElementById('excelFilePath'),
+      pickExcelToIniMapBtn: document.getElementById('pickExcelToIniMapBtn'),
+      restoreMapPathBtn: document.getElementById('restoreMapPathBtn'),
+      pickExcelFileBtn: document.getElementById('pickExcelFileBtn'),
+      statusExcelToIni: document.getElementById('statusExcelToIni'),
+      convertExcelToIniBtn: document.getElementById('convertExcelToIniBtn')
     };
 
     function setStatus(text, type = 'info') {
       els.status.textContent = text;
       els.status.className = 'status' + (type === 'success' ? ' success' : type === 'error' ? ' error' : '');
+    }
+
+    function setStatusExcelToIni(text, type = 'info') {
+      els.statusExcelToIni.textContent = text;
+      els.statusExcelToIni.className = 'status' + (type === 'success' ? ' success' : type === 'error' ? ' error' : '');
     }
 
     function renderCurrentTip(withFlash = true) {
@@ -760,6 +806,17 @@
       }, 3600);
     }
 
+    function updateModeDescriptions() {
+      // 根据是否配置w3x2lni更新描述文本
+      if (state.hasW3x2lni) {
+        els.iniToExcelDesc.textContent = '将一个地图文件夹或地图文件转换为 Excel 表格进行编辑。';
+        els.excelToIniDesc.textContent = '将编辑后的 Excel 内容回写为对应的 INI 结构数据或地图。';
+      } else {
+        els.iniToExcelDesc.textContent = '将一个地图文件夹转换为 Excel 表格进行编辑。';
+        els.excelToIniDesc.textContent = '将编辑后的 Excel 内容回写为对应的 INI 结构数据。';
+      }
+    }
+
     function updateMapPickerState() {
       const disabled = !state.hasW3x2lni || state.conversionType !== 'ini_to_excel';
       els.pickInputFileBtn.disabled = disabled;
@@ -768,10 +825,20 @@
 
     function syncModeUI() {
       state.ext = state.conversionType === 'ini_to_excel' ? '.xlsx' : '.ini';
-      els.pickInputFolderBtn.textContent = state.conversionType === 'ini_to_excel' ? '选择地图文件夹' : '选择 Excel 文件';
-      els.pickInputFileBtn.textContent = state.conversionType === 'ini_to_excel' ? '选择地图' : '选择 Excel';
+      
+      // 切换工作区显示
+      if (state.conversionType === 'ini_to_excel') {
+        els.iniToExcelWorkspace.classList.remove('hidden');
+        els.excelToIniWorkspace.classList.add('hidden');
+      } else {
+        els.iniToExcelWorkspace.classList.add('hidden');
+        els.excelToIniWorkspace.classList.remove('hidden');
+      }
+      
       updateMapPickerState();
+      updateModeDescriptions();
       setStatus('就绪');
+      setStatusExcelToIni('就绪');
     }
 
     function formatW3x2lniDisplay(path) {
@@ -836,12 +903,23 @@
         state.conversionType = config.conversion_type || 'ini_to_excel';
         state.hasW3x2lni = !!config.has_w3x2lni;
         state.w3x2lniPath = config.w3x2lni_path || '';
+        state.w3x2lniPathAbs = config.w3x2lni_path_abs || '';
         state.enableCalcFormulaDetection = config.enable_calc_formula_detection !== false;
         state.uiTips = Array.isArray(config.ui_tips) ? config.ui_tips : [];
         state.helpUrl = config.help_url || state.helpUrl;
         state.githubUrl = config.github_url || state.githubUrl;
+        // INI 转 Excel 状态
         state.xlsxExists = !!config.xlsx_exists;
         state.xlsxPath = config.xlsx_path || '';
+        // Excel 转 INI 状态
+        state.excelToIniMapPath = config.excel_to_ini_map_path || '';
+        state.excelToIniMapPathAbs = config.excel_to_ini_map_path_abs || '';
+        state.excelFilePath = config.excel_file_path || '';
+        state.excelFilePathAbs = config.excel_file_path_abs || '';
+        
+        // 更新 Excel 转 INI 工作区显示
+        els.excelToIniMapPath.value = state.excelToIniMapPathAbs || '';
+        els.excelFilePath.value = state.excelFilePathAbs || '';
 
         const checkedRadio = document.querySelector(`input[name="conversionType"][value="${state.conversionType}"]`);
         if (checkedRadio) checkedRadio.checked = true;
@@ -1041,6 +1119,93 @@
         }
       });
     });
+
+    // Excel 转 INI 相关事件
+    els.pickExcelToIniMapBtn.addEventListener('click', async () => {
+      try {
+        const result = await callApi('pick_input_folder');
+        if (result && result.path !== undefined) {
+          state.excelToIniMapPath = result.path || '';
+          state.excelToIniMapPathAbs = result.path_abs || '';
+          els.excelToIniMapPath.value = state.excelToIniMapPathAbs;
+          
+          // 自动检测同名Excel文件
+          await autoDetectExcelFile();
+        }
+      } catch (error) {
+        setStatusExcelToIni(error.message || String(error), 'error');
+      }
+    });
+
+    els.restoreMapPathBtn.addEventListener('click', async () => {
+      // 使用 INI 转 Excel 工作区内的地图文件夹
+      const iniToExcelPath = els.inputPath.value;
+      if (iniToExcelPath) {
+        state.excelToIniMapPathAbs = iniToExcelPath;
+        els.excelToIniMapPath.value = iniToExcelPath;
+        await autoDetectExcelFile();
+      } else {
+        setStatusExcelToIni('INI 转 Excel 工作区中没有地图文件夹路径', 'error');
+      }
+    });
+
+    els.pickExcelFileBtn.addEventListener('click', async () => {
+      try {
+        const result = await callApi('pick_excel_file', { map_folder: state.excelToIniMapPathAbs });
+        if (result && result.path !== undefined) {
+          state.excelFilePath = result.path || '';
+          state.excelFilePathAbs = result.path_abs || '';
+          els.excelFilePath.value = state.excelFilePathAbs;
+        }
+      } catch (error) {
+        setStatusExcelToIni(error.message || String(error), 'error');
+      }
+    });
+
+    els.convertExcelToIniBtn.addEventListener('click', async () => {
+      if (!state.excelToIniMapPathAbs) {
+        setStatusExcelToIni('请先选择地图文件夹', 'error');
+        return;
+      }
+      if (!state.excelFilePathAbs) {
+        setStatusExcelToIni('请先选择 Excel 文件', 'error');
+        return;
+      }
+      
+      els.convertExcelToIniBtn.disabled = true;
+      setStatusExcelToIni('正在执行转换...');
+      try {
+        const result = await callApi('run_excel_to_ini_conversion', {
+          map_folder: state.excelToIniMapPathAbs,
+          excel_file: state.excelFilePathAbs
+        });
+        setStatusExcelToIni(result.message || '转换完成', result.success ? 'success' : 'error');
+      } catch (error) {
+        setStatusExcelToIni(error.message || String(error), 'error');
+      } finally {
+        els.convertExcelToIniBtn.disabled = false;
+      }
+    });
+
+    async function autoDetectExcelFile() {
+      if (!state.excelToIniMapPathAbs) return;
+      
+      try {
+        const result = await callApi('auto_detect_excel_file', { map_folder: state.excelToIniMapPathAbs });
+        if (result && result.excel_path) {
+          // 如果当前已有路径，询问是否替换
+          if (state.excelFilePathAbs) {
+            const shouldReplace = window.confirm(`检测到同名 Excel 文件：\n${result.excel_path}\n\n是否替换当前路径？`);
+            if (!shouldReplace) return;
+          }
+          state.excelFilePath = result.excel_path_rel || '';
+          state.excelFilePathAbs = result.excel_path;
+          els.excelFilePath.value = state.excelFilePathAbs;
+        }
+      } catch (error) {
+        // 自动检测失败不显示错误
+      }
+    }
 
     window.addEventListener('pywebviewready', bootstrap);
   </script>

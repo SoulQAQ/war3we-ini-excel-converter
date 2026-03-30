@@ -26,10 +26,11 @@
 
 本仓库仍在持续开发中。
 
-- `INI` → `Excel` 转换已可使用
-- `Excel` → `INI` 转换计划中 / 开发中
+- `INI` → `Excel` 转换已可使用，功能完善
+- `Excel` → `INI` 转换正在开发中
 - 图形界面位于 [`script/gui.py`](script/gui.py)
 - `w3x2lni` 功能依赖于在工具中配置正确的安装路径
+- INI→Excel 和 Excel→INI 模式拥有独立的工作区和路径配置
 
 ## 仓库结构
 
