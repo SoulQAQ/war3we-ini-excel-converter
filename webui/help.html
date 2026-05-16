@@ -7,13 +7,14 @@
   <style>
     :root {
       color-scheme: light;
-      --bg: #f3f4f6;
-      --panel: #ffffff;
-      --text: #111827;
-      --muted: #6b7280;
-      --line: #e5e7eb;
-      --primary: #2563eb;
-      --primary-soft: #eff6ff;
+      --bg: #f4f7f6;
+      --surface: #ffffff;
+      --text: #10201f;
+      --muted: #5b6f70;
+      --line: #d8e6e4;
+      --primary: #0f766e;
+      --primary-soft: #dff6f2;
+      --accent-soft: #fff7ed;
     }
 
     * {
@@ -24,22 +25,22 @@
       margin: 0;
       background: var(--bg);
       color: var(--text);
-      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
       line-height: 1.75;
     }
 
     .page {
-      max-width: 900px;
+      max-width: 920px;
       margin: 0 auto;
       padding: 28px 20px 40px;
     }
 
     .panel {
-      background: var(--panel);
       border: 1px solid var(--line);
-      border-radius: 16px;
+      border-radius: 8px;
+      background: var(--surface);
       padding: 28px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+      box-shadow: 0 14px 32px rgba(24, 44, 43, 0.08);
     }
 
     h1 {
@@ -58,24 +59,34 @@
       font-size: 18px;
     }
 
-    ul, ol {
+    ul,
+    ol {
       padding-left: 22px;
     }
 
     code {
-      padding: 2px 6px;
       border-radius: 6px;
-      background: #f3f4f6;
+      padding: 2px 6px;
+      background: #eef4f3;
       font-family: Consolas, "Courier New", monospace;
       font-size: 13px;
     }
 
-    .tip {
+    .tip,
+    .note {
       margin-top: 18px;
+      border-radius: 8px;
       padding: 14px 16px;
+    }
+
+    .tip {
+      border: 1px solid #b8e7e0;
       background: var(--primary-soft);
-      border: 1px solid #bfdbfe;
-      border-radius: 12px;
+    }
+
+    .note {
+      border: 1px solid #fed7aa;
+      background: var(--accent-soft);
     }
 
     a {
@@ -92,37 +103,47 @@
   <div class="page">
     <div class="panel">
       <h1>INI ⇄ Excel 转换工具帮助</h1>
-      <p class="lead">此工具主要由AI完成，可能存在一些不完善之处，欢迎提issue反馈。</p>
+      <p class="lead">用于 Warcraft III table 物编数据与 Excel 工作簿互转。</p>
 
       <h2>基本流程</h2>
       <ol>
-        <li>选择转换类型：<code>INI → Excel</code> 或 <code>Excel → INI</code></li>
-        <li>通过界面按钮选择输入来源</li>
-        <li>选择输出目录，并填写输出文件名</li>
-        <li>点击“开始转换”执行任务</li>
+        <li>选择转换类型：<code>INI → Excel</code> 或 <code>Excel → INI</code>。</li>
+        <li>选择输入路径。INI 导出支持单个 <code>.ini</code> 文件或 <code>table</code> 目录；Excel 回写请选择 <code>.xlsx</code> 文件。</li>
+        <li>INI 导出需要选择输出位置并填写输出文件名；Excel 回写默认使用工作簿记录的原始 INI 路径。</li>
+        <li>点击“开始转换”。转换成功后可在主界面打开输出位置。</li>
       </ol>
 
-      <h2>输入选择说明</h2>
+      <h2>INI → Excel</h2>
       <ul>
-        <li><strong>选择地图文件夹</strong>：选择你LNI格式的地图目录，程序会优先识别其中的 <code>table</code> 子目录。</li>
-        <li><strong>选择地图</strong>：直接选择 <code>.w3x</code> 地图文件，此功能依赖你正确配置 <code>w3x2lni</code>（该功能未完成）。</li>
+        <li>选择地图目录时，如果目录下同时存在 <code>table</code> 与 <code>w3x2lni</code>，程序会自动进入 <code>table</code> 子目录。</li>
+        <li>工具会跳过 <code>imp.ini</code>、<code>w3i.ini</code>、<code>misc.ini</code> 这类非物编表。</li>
+        <li>多等级数组会被整理到同一个单元格；设置中启用公式识别后，等差数列会显示为 <code>calc@10+5</code> 形式。</li>
       </ul>
 
-      <h2>w3x2lni 配置说明</h2>
+      <h2>Excel → INI</h2>
       <ul>
-        <li>首先你需要先安装 <code>w3x2lni</code>，如果你没有，请访问 <a href="https://github.com/sumneko/w3x2lni" target="_blank">w3x2lni</a>。</li>
-        <li>你的<code>w3x2lni</code>一定要解压到<b>一个你认识的位置</b></li>
-        <li>你的<code>w3x2lni</code>一定要解压到<b>一个你认识的位置</b></li>
-        <li>你的<code>w3x2lni</code>一定要解压到<b>一个你认识的位置</b></li>
-        <li>你的<code>w3x2lni</code>一定要解压到<b>一个你认识的位置</b></li>
-        <li>你的<code>w3x2lni</code>一定要解压到<b>一个你认识的位置</b></li>
-        <li>你的<code>w3x2lni</code>一定要解压到<b>一个你认识的位置</b></li>
-        <li>你的<code>w3x2lni</code>一定要解压到<b>一个你认识的位置</b></li>
-        <li>在工具右上角的设置指定 <code>w3x2lni</code> 的路径（<code>选择你的w3x2lni.exe</code>）</li>
+        <li>由本工具导出的 Excel 会记录每个工作表的原始 INI 路径，回写时默认覆盖这些原始文件。</li>
+        <li>如果关闭“回写到原始 ini 文件”，工作簿会按工作表名称生成到指定 table 目录。</li>
+        <li>默认工作表映射：<code>技能 → ability.ini</code>、<code>魔法效果 → buff.ini</code>、<code>物品 → item.ini</code>、<code>单位 → unit.ini</code>、<code>科技 → upgrade.ini</code>。</li>
+        <li>单元格里使用独立一行 <code>----</code> 可以分隔多等级文本。</li>
+        <li><code>levels</code> 大于 1 时，常见等级字段会回写为 <code>{...}</code> 数组；<code>calc@A+B</code> 会按等级数展开。</li>
+        <li>包含换行的文本会回写为 <code>[=[...]=]</code>，避免破坏 Warcraft III 文本格式。</li>
       </ul>
+
+      <h2>w2l 拆包与装包</h2>
+      <ul>
+        <li>如果要直接选择 <code>.w3x</code> 地图文件，请先安装 <a href="https://github.com/sumneko/w3x2lni" target="_blank">w3x2lni</a>。</li>
+        <li>在主界面右上角“设置”里选择 <code>w2l.exe</code>；也可以选择 <code>w3x2lni.exe</code>，程序会尝试使用同目录下的 <code>w2l.exe</code>。</li>
+        <li>“拆包地图”会调用 <code>w2l.exe unpack</code>，并把生成的 <code>table</code> 目录填入 INI 导出输入路径。</li>
+        <li>“装包地图”会调用 <code>w2l.exe pack</code>，把拆包目录重新输出为 <code>.w3x</code>。</li>
+      </ul>
+
+      <div class="note">
+        建议每次批量回写前保留原始 <code>table</code> 目录备份，尤其是在大规模修改技能或单位数据时。
+      </div>
 
       <div class="tip">
-        若你需要查看项目源码、问题反馈或最新进展，请访问
+        源码、问题反馈与更新记录请访问
         <a href="https://github.com/SoulQAQ/war3we-ini-excel-converter" target="_blank">GitHub 仓库</a>。
       </div>
     </div>

@@ -7,6 +7,7 @@ INI 转 Excel 工具
 
 import os
 import re
+from pathlib import Path
 from openpyxl import Workbook
 from openpyxl.styles import Font
 from openpyxl.utils import get_column_letter
@@ -14,6 +15,8 @@ from openpyxl.utils import get_column_letter
 
 MULTILINE_ELEMENT_SEPARATOR = '----'
 EMPTY_TEXT_PLACEHOLDER = '@empty'
+METADATA_SHEET_NAME = '__ini_meta'
+SOURCE_SHEET_NAME = '__ini_sources'
 SKIPPED_INI_FILES = {'imp.ini', 'w3i.ini', 'misc.ini'}
 DEFAULT_EXPORT_OPTIONS = {
     'enable_calc_formula_detection': True,
@@ -238,6 +241,17 @@ def get_multi_element_count(value):
         return len(top_level)
 
     return 1 if stripped else 0
+
+
+def get_ini_value_kind(value):
+    """记录原始 INI 值形态，供 Excel 回写时保留数组/标量结构。"""
+    if not isinstance(value, str):
+        return 'scalar'
+
+    stripped = value.strip()
+    if stripped.startswith('{') and stripped.endswith('}'):
+        return 'array'
+    return 'scalar'
 
 
 
@@ -527,6 +541,8 @@ def create_excel_with_sheets(ini_folder, output_path, ini_names=None, export_opt
 
     raw_ini_files = get_ini_files(ini_folder)
     ini_files = [path for path in raw_ini_files if os.path.basename(path).lower() not in SKIPPED_INI_FILES]
+    metadata_rows = []
+    source_rows = []
 
     if not ini_files:
         print(f"未在 {ini_folder} 中找到可转换的 INI 文件")
@@ -553,6 +569,12 @@ def create_excel_with_sheets(ini_folder, output_path, ini_names=None, export_opt
             ws = wb.create_sheet(title=sheet_name)
 
         objects = parse_ini_file(ini_file)
+        actual_sheet_name = ws.title
+        source_rows.append([
+            actual_sheet_name,
+            filename,
+            str(Path(ini_file).resolve()),
+        ])
 
         ws.cell(row=1, column=1, value='物体 ID')
         ws.cell(row=2, column=1, value='')
@@ -588,6 +610,15 @@ def create_excel_with_sheets(ini_folder, output_path, ini_names=None, export_opt
             prop_values = {p['name']: p['value'] for p in obj['properties']}
             inferred_levels = ensure_levels_for_cost(prop_values)
 
+            for prop in obj['properties']:
+                metadata_rows.append([
+                    actual_sheet_name,
+                    obj['id'],
+                    prop['name'],
+                    get_ini_value_kind(prop['value']),
+                    get_multi_element_count(prop['value']),
+                ])
+
             if 'Name' in prop_values:
                 ws.cell(row=row_idx, column=2, value=decode_ini_value('Name', prop_values['Name'], export_options))
             if 'levels' in prop_values:
@@ -617,6 +648,20 @@ def create_excel_with_sheets(ini_folder, output_path, ini_names=None, export_opt
         for col_idx in range(len(ordered_props)):
             col = col_offset + col_idx
             auto_size_column(ws, col, min_width=15, max_width=80)
+
+    if metadata_rows:
+        meta_ws = wb.create_sheet(title=METADATA_SHEET_NAME)
+        meta_ws.append(['sheet_name', 'object_id', 'property_name', 'value_kind', 'element_count'])
+        for row in metadata_rows:
+            meta_ws.append(row)
+        meta_ws.sheet_state = 'hidden'
+
+    if source_rows:
+        source_ws = wb.create_sheet(title=SOURCE_SHEET_NAME)
+        source_ws.append(['sheet_name', 'ini_filename', 'source_path'])
+        for row in source_rows:
+            source_ws.append(row)
+        source_ws.sheet_state = 'hidden'
 
     output_dir = os.path.dirname(output_path)
     if output_dir and not os.path.exists(output_dir):

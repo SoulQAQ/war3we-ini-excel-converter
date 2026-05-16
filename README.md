@@ -9,7 +9,7 @@ A Python-based tool for converting Warcraft III object data between `INI` files 
 - Convert Warcraft III object data from `INI` to `Excel`
 - Convert edited `Excel` files back to `INI`
 - Support for structured object data editing with better spreadsheet workflows
-- Optional integration with [`w3x2lni`](https://github.com/sumneko/w3x2lni) when its installation directory is specified in the tool, enabling related `.w3x` conversion features
+- Optional integration with `w2l.exe` from [`w3x2lni`](https://github.com/sumneko/w3x2lni), enabling `.w3x` unpack and pack workflows
 
 ## Project Goal
 
@@ -20,16 +20,16 @@ Typical workflow:
 1. Export map object data to `LNI` or `INI`
 2. Edit the data in `Excel`
 3. Import the modified data back into the Warcraft III format
-4. If [`w3x2lni`](https://github.com/sumneko/w3x2lni) is installed and configured in the tool, use it to support `.w3x`-related conversion workflows
+4. If `w2l.exe` is configured in the tool, unpack `.w3x` maps and pack edited folders back to `.w3x`
 
 ## Current Status
 
 This repository is still under active development.
 
 - `INI` → `Excel` conversion is available
-- `Excel` → `INI` conversion is planned / under development
+- `Excel` → `INI` conversion is available and defaults to writing back to original INI paths recorded in exported workbooks
 - GUI support is included in [`script/gui.py`](script/gui.py)
-- `w3x2lni` support depends on the installation directory configured in the tool
+- `w3x2lni` support depends on a valid `w2l.exe` path configured in the tool
 
 ## Repository Structure
 
@@ -54,7 +54,7 @@ Run the converter script in [`script/ini_to_excel.py`](script/ini_to_excel.py).
 
 ### 2. Convert `Excel` to `INI`
 
-Run the reverse converter in [`script/excel_to_ini.py`](script/excel_to_ini.py).
+Run the reverse converter in [`script/excel_to_ini.py`](script/excel_to_ini.py). Workbooks exported by this tool record the original INI source path per sheet and can be written back to those original locations. You can also disable source-path writeback and output a mapped `table` directory (`ability.ini`, `buff.ini`, `item.ini`, `unit.ini`, `upgrade.ini`).
 
 ### 3. GUI mode
 
@@ -62,7 +62,7 @@ Launch the graphical interface in [`script/gui.py`](script/gui.py).
 
 ### 4. `w3x2lni`-assisted workflows
 
-When you have installed [`w3x2lni`](https://github.com/sumneko/w3x2lni) and specified its installation directory in the tool, the project can use it for related `.w3x` conversion functions.
+When you have installed [`w3x2lni`](https://github.com/sumneko/w3x2lni) and configured `w2l.exe` in the tool, the app can call `w2l.exe unpack` for map extraction and `w2l.exe pack` for repacking.
 
 ## Build From Source
 
@@ -148,8 +148,8 @@ If these folders do not exist yet, create them manually before testing file conv
 ## Notes
 
 - This project focuses on Warcraft III object data editing workflows.
-- `w3x2lni`-related features are available only when the tool is configured with the correct installation path.
-- Generated files are stored in [`rundata/output/`](rundata/output/).
+- `w3x2lni`-related features are available only when the tool is configured with a valid `w2l.exe` path.
+- `INI` → `Excel` outputs are stored in [`rundata/output/`](rundata/output/) by default, while `Excel` → `INI` defaults to writing back to original INI locations.
 
 ## License
 

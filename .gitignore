@@ -3,3 +3,5 @@ example/
 w3x2lni/
 .venv/
 dist/
+.vscode/
+plans/

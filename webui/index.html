@@ -7,18 +7,34 @@
   <style>
     :root {
       color-scheme: light;
-      --bg: #eef2f7;
-      --panel: #ffffff;
-      --panel-soft: #f8fafc;
-      --text: #111827;
-      --muted: #6b7280;
-      --line: #dbe3ef;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --success: #16a34a;
-      --danger: #dc2626;
-      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-      --radius: 14px;
+      --bg: #f4f7f6;
+      --surface: #ffffff;
+      --surface-soft: #f8fbfa;
+      --surface-strong: #eef7f5;
+      --text: #10201f;
+      --muted: #5b6f70;
+      --line: #d8e6e4;
+      --line-strong: #b9d1cd;
+      --primary: #0f766e;
+      --primary-hover: #115e59;
+      --primary-soft: #dff6f2;
+      --accent: #ea580c;
+      --success: #16803f;
+      --danger: #c2410c;
+      --shadow: 0 14px 32px rgba(24, 44, 43, 0.08);
+      --radius: 8px;
+      --transition: 180ms ease-out;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
     }
 
     * {
@@ -33,110 +49,208 @@
     body {
       margin: 0;
       min-height: 100vh;
-      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      font-family: "Inter", "Segoe UI", "Microsoft YaHei", sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
       color: var(--text);
-      background:
-        radial-gradient(circle at top right, rgba(37, 99, 235, 0.07), transparent 28%),
-        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      min-height: 44px;
+      border: 0;
+      border-radius: var(--radius);
+      padding: 0 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform var(--transition), background-color var(--transition), border-color var(--transition), box-shadow var(--transition), opacity var(--transition);
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    button:focus-visible,
+    input:focus-visible {
+      outline: 3px solid rgba(15, 118, 110, 0.22);
+      outline-offset: 2px;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+      transform: none;
     }
 
     .app {
       min-height: 100vh;
-      padding: 22px 24px 18px;
       display: flex;
       flex-direction: column;
-      gap: 18px;
     }
 
     .topbar {
+      min-height: 82px;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
-      gap: 16px;
+      gap: 20px;
+      padding: 18px 28px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+    }
+
+    .title-wrap {
+      min-width: 0;
     }
 
     .title-wrap h1 {
-      margin: 0 0 6px;
-      font-size: 30px;
-      font-weight: 700;
-      color: #0f172a;
-      letter-spacing: 0.2px;
+      margin: 0 0 4px;
+      font-size: 25px;
+      font-weight: 800;
+      letter-spacing: 0;
     }
 
     .title-wrap p {
       margin: 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .top-actions {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
       justify-content: flex-end;
+      gap: 10px;
     }
 
-    .icon-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.92);
-      color: #1f2937;
-      border-radius: 12px;
-      padding: 10px 14px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s ease, border-color 0.2s ease, transform 0.08s ease, box-shadow 0.2s ease;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(15, 118, 110, 0.18);
     }
 
-    .icon-btn:hover {
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      border: 1px solid var(--line-strong);
       background: #ffffff;
-      border-color: #c6d2e1;
-      transform: translateY(-1px);
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.07);
+      color: var(--text);
     }
 
-    .icon {
-      width: 16px;
-      text-align: center;
-      font-size: 15px;
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--surface-strong);
+      border-color: #8eb7b1;
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(22, 128, 63, 0.16);
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: #126c35;
+    }
+
+    .btn-ghost {
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--primary);
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--primary-soft);
+      border-color: #b8e7e0;
     }
 
     .workspace {
       flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      padding: 18px;
+      min-height: 0;
+    }
+
+    .main-panel,
+    .side-panel {
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .main-panel {
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      min-height: 0;
+      overflow: hidden;
     }
 
-    .section {
-      padding: 18px;
-      border: 1px solid rgba(219, 227, 239, 0.95);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.9);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(4px);
+    .panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff, var(--surface-soft));
     }
 
-    .section-title {
-      margin: 0 0 14px;
-      font-size: 15px;
-      font-weight: 700;
-      color: #1f2937;
+    .panel-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .panel-desc {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .output-chip {
+      flex: 0 0 auto;
+      min-height: 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #badbd7;
+      border-radius: 999px;
+      padding: 4px 12px;
+      background: var(--primary-soft);
+      color: #0b5853;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .content {
+      flex: 1;
+      overflow: auto;
+      padding: 20px;
     }
 
     .mode-group {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
-      flex-wrap: wrap;
+      margin-bottom: 18px;
     }
 
     .mode-option {
-      flex: 1 1 220px;
       position: relative;
+      min-width: 0;
     }
 
     .mode-option input {
@@ -147,17 +261,22 @@
     }
 
     .mode-card {
+      min-height: 112px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
       border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 14px 16px;
+      border-radius: var(--radius);
+      padding: 14px;
       background: #fff;
-      transition: 0.2s ease;
+      transition: border-color var(--transition), box-shadow var(--transition), background-color var(--transition);
     }
 
     .mode-option input:checked + .mode-card {
-      border-color: rgba(37, 99, 235, 0.55);
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
-      background: #eff6ff;
+      border-color: #63bdb4;
+      background: #f0fbf9;
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.08);
     }
 
     .mode-card strong {
@@ -171,128 +290,74 @@
       font-size: 13px;
     }
 
-    .field {
-      display: grid;
-      grid-template-columns: 110px minmax(0, 1fr) auto auto;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 12px;
+    .mode-card code {
+      align-self: flex-start;
+      border-radius: 999px;
+      padding: 3px 9px;
+      background: #f1f5f9;
+      color: #334155;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
     }
 
-    .field:last-child {
-      margin-bottom: 0;
+    .form-grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .field {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr) auto auto;
+      gap: 10px;
+      align-items: center;
     }
 
     .field.single-action {
-      grid-template-columns: 110px minmax(0, 1fr) auto;
+      grid-template-columns: 112px minmax(0, 1fr) auto;
     }
 
-    label {
-      font-size: 14px;
-      font-weight: 600;
-      color: #374151;
+    .option-row {
+      display: grid;
+      grid-template-columns: 112px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+      padding: 2px 0;
+    }
+
+    .field-label {
+      color: #294443;
+      font-weight: 800;
     }
 
     input[type="text"] {
       width: 100%;
-      border: 1px solid #d1d9e6;
-      border-radius: 12px;
-      padding: 11px 14px;
-      font-size: 14px;
+      min-height: 44px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      padding: 0 12px;
       background: #fff;
+      color: var(--text);
       outline: none;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      transition: border-color var(--transition), box-shadow var(--transition), background-color var(--transition);
+    }
+
+    #packedMapPath {
+      background: #fff;
     }
 
     input[type="text"]:focus {
-      border-color: rgba(37, 99, 235, 0.7);
-      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.08);
     }
 
     input[type="text"][disabled] {
-      background: #f4f7fb;
-      color: #607087;
-      cursor: not-allowed;
+      background: #f1f6f5;
+      color: #526867;
     }
 
     .path-input {
       font-family: Consolas, "Courier New", monospace;
-    }
-
-    button {
-      border: 0;
-      border-radius: 12px;
-      padding: 11px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.08s ease, background 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-    }
-
-    button:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .btn-primary {
-      background: var(--primary);
-      color: white;
-      box-shadow: 0 8px 18px rgba(37, 99, 235, 0.22);
-    }
-
-    .btn-primary:hover {
-      background: var(--primary-hover);
-    }
-
-    .btn-secondary {
-      background: #e8edf4;
-      color: #1f2937;
-    }
-
-    .btn-secondary:hover {
-      background: #dde5ef;
-    }
-
-    .btn-success {
-      background: var(--success);
-      color: white;
-      box-shadow: 0 8px 18px rgba(22, 163, 74, 0.2);
-    }
-
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: #eff6ff;
-      color: #1d4ed8;
       font-size: 13px;
-      font-weight: 600;
-    }
-
-    .status::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    .status.success {
-      background: #ecfdf5;
-      color: #15803d;
-    }
-
-    .status.error {
-      background: #fef2f2;
-      color: #b91c1c;
     }
 
     .tooltip-wrap {
@@ -304,18 +369,18 @@
       position: absolute;
       right: 0;
       bottom: calc(100% + 8px);
-      width: 260px;
+      width: 276px;
       padding: 10px 12px;
-      border-radius: 10px;
-      background: #111827;
+      border-radius: var(--radius);
+      background: #12211f;
       color: #fff;
       font-size: 12px;
       line-height: 1.6;
       opacity: 0;
       pointer-events: none;
       transform: translateY(4px);
-      transition: opacity 0.16s ease, transform 0.16s ease;
-      box-shadow: 0 10px 24px rgba(17, 24, 39, 0.22);
+      transition: opacity var(--transition), transform var(--transition);
+      box-shadow: 0 12px 28px rgba(16, 32, 31, 0.24);
       z-index: 10;
     }
 
@@ -325,57 +390,146 @@
       transform: translateY(0);
     }
 
-    .bottom-bar {
+    .detail-row {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 14px;
-      align-items: center;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 18px;
     }
 
-    .tips-bar {
+    .detail-item {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: var(--surface-soft);
+    }
+
+    .detail-label {
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .detail-value {
+      min-height: 21px;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    .map-tools {
+      margin-top: 20px;
+      border-top: 1px solid var(--line);
+      padding-top: 18px;
+    }
+
+    .map-tools-header {
       display: flex;
-      align-items: center;
-      min-height: 52px;
-      padding: 12px 16px;
-      border: 1px solid rgba(191, 219, 254, 0.95);
-      border-radius: 14px;
-      background: linear-gradient(90deg, rgba(219, 234, 254, 0.9), rgba(239, 246, 255, 0.96));
-      color: #1e3a8a;
-      box-shadow: var(--shadow);
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .map-tools-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .map-tools-desc {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .map-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .side-panel {
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
     }
 
-    .tips-label {
-      flex: 0 0 auto;
-      margin-right: 12px;
+    .side-section {
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .side-section:last-child {
+      border-bottom: 0;
+    }
+
+    .side-title {
+      margin: 0 0 10px;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .check-list {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .check-list li {
+      display: grid;
+      grid-template-columns: 18px minmax(0, 1fr);
+      gap: 8px;
+      color: var(--muted);
       font-size: 13px;
-      font-weight: 700;
-      color: #1d4ed8;
-      letter-spacing: 0.2px;
+    }
+
+    .check-list li::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      margin-top: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .tips-bar {
+      min-height: 92px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      border: 1px solid #f0cda8;
+      border-radius: var(--radius);
+      padding: 12px;
+      background: #fff7ed;
+      color: #7c2d12;
+    }
+
+    .tips-label {
+      color: #9a3412;
+      font-size: 12px;
+      font-weight: 900;
     }
 
     .tip-display {
       min-width: 0;
       font-size: 13px;
       line-height: 1.6;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       opacity: 1;
     }
 
     .tip-display.flash {
-      animation: tipFlash 0.8s ease;
+      animation: tipFlash 650ms ease-out;
     }
 
     @keyframes tipFlash {
       0% {
-        opacity: 0.1;
-        transform: translateY(4px);
-      }
-      45% {
-        opacity: 1;
-        transform: translateY(0);
+        opacity: 0.2;
+        transform: translateY(3px);
       }
       100% {
         opacity: 1;
@@ -383,12 +537,45 @@
       }
     }
 
-    .actions {
+    .status {
       display: flex;
-      justify-content: flex-end;
       align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 44px;
+      border: 1px solid #b8d8f7;
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      background: #eff6ff;
+      color: #174a8b;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .status::before {
+      content: "";
+      flex: 0 0 auto;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status.success {
+      border-color: #b7e3c7;
+      background: #ecfdf3;
+      color: #166534;
+    }
+
+    .status.error {
+      border-color: #fed7aa;
+      background: #fff7ed;
+      color: #9a3412;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
     }
 
     .dialog-mask {
@@ -397,8 +584,8 @@
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgba(17, 24, 39, 0.35);
       padding: 20px;
+      background: rgba(18, 33, 31, 0.46);
       z-index: 50;
     }
 
@@ -407,11 +594,11 @@
     }
 
     .dialog {
-      width: min(560px, 100%);
-      background: #fff;
-      border-radius: 18px;
+      width: min(600px, 100%);
       border: 1px solid var(--line);
-      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.18);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 24px 60px rgba(18, 33, 31, 0.28);
       overflow: hidden;
     }
 
@@ -422,24 +609,18 @@
     }
 
     .dialog-footer {
-      border-bottom: 0;
-      border-top: 1px solid var(--line);
       display: flex;
       justify-content: flex-end;
       gap: 10px;
+      border-top: 1px solid var(--line);
+      border-bottom: 0;
+      background: var(--surface-soft);
     }
 
     .dialog-title {
       margin: 0;
       font-size: 18px;
-      font-weight: 700;
-    }
-
-    .dialog-desc {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.7;
+      font-weight: 800;
     }
 
     .dialog-body {
@@ -448,14 +629,14 @@
 
     .settings-row {
       display: grid;
-      grid-template-columns: 90px minmax(0, 1fr);
+      grid-template-columns: 96px minmax(0, 1fr);
       gap: 10px;
       align-items: center;
       margin-bottom: 12px;
     }
 
     .settings-row--input {
-      grid-template-columns: 90px minmax(0, 1fr) auto;
+      grid-template-columns: 96px minmax(0, 1fr) auto;
     }
 
     .settings-toggle {
@@ -463,10 +644,10 @@
       align-items: center;
       gap: 10px;
       justify-self: start;
+      min-height: 44px;
       cursor: pointer;
       user-select: none;
       white-space: nowrap;
-      margin-left: 0;
     }
 
     .settings-toggle input {
@@ -479,15 +660,15 @@
       position: relative;
       width: 46px;
       height: 26px;
+      flex: 0 0 auto;
       border-radius: 999px;
       background: #d1d5db;
-      box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
-      transition: background-color 0.2s ease;
-      flex-shrink: 0;
+      box-shadow: inset 0 0 0 1px rgba(16, 32, 31, 0.08);
+      transition: background-color var(--transition);
     }
 
     .settings-switch::after {
-      content: '';
+      content: "";
       position: absolute;
       top: 3px;
       left: 3px;
@@ -495,8 +676,8 @@
       height: 20px;
       border-radius: 50%;
       background: #fff;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
-      transition: transform 0.2s ease;
+      box-shadow: 0 2px 6px rgba(16, 32, 31, 0.22);
+      transition: transform var(--transition);
     }
 
     .settings-toggle input:checked + .settings-switch {
@@ -507,16 +688,9 @@
       transform: translateX(20px);
     }
 
-    .settings-toggle-text {
-      color: var(--text);
-      font-size: 14px;
-    }
-
-    .settings-inline-help {
-      margin: -2px 0 14px 100px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.7;
+    .settings-toggle input:focus-visible + .settings-switch {
+      outline: 3px solid rgba(15, 118, 110, 0.22);
+      outline-offset: 2px;
     }
 
     .settings-row--toggle {
@@ -525,14 +699,21 @@
 
     .settings-row--toggle .settings-toggle {
       grid-column: 2;
-      justify-self: start;
+    }
+
+    .settings-inline-help,
+    .settings-help {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .settings-inline-help {
+      margin: -4px 0 14px 106px;
     }
 
     .settings-help {
       margin-top: 12px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.7;
     }
 
     .settings-help a {
@@ -548,111 +729,220 @@
       display: none !important;
     }
 
+    @media (max-width: 980px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        order: -1;
+      }
+
+      .actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
     @media (max-width: 760px) {
-      .app {
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
         padding: 16px;
       }
 
-      .topbar,
-      .bottom-bar {
-        flex-direction: column;
-        display: flex;
-        align-items: stretch;
+      .top-actions {
+        justify-content: flex-start;
       }
 
-      .top-actions {
-        width: 100%;
-        justify-content: flex-start;
+      .workspace {
+        padding: 12px;
+      }
+
+      .mode-group,
+      .detail-row,
+      .map-actions,
+      .actions {
+        grid-template-columns: 1fr;
       }
 
       .field,
       .field.single-action,
-      .settings-row {
+      .option-row,
+      .settings-row,
+      .settings-row--input {
         grid-template-columns: 1fr;
       }
 
-      .tip-display {
-        white-space: normal;
+      .settings-row--toggle .settings-toggle {
+        grid-column: 1;
       }
 
-      .actions {
-        justify-content: flex-start;
+      .settings-inline-help {
+        margin-left: 0;
       }
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="topbar">
+    <header class="topbar">
       <div class="title-wrap">
         <h1>INI ⇄ Excel 转换工具</h1>
-        <p>Warcraft III 结构数据与 Excel 互转</p>
+        <p>面向 Warcraft III table 数据的批量编辑工作台</p>
       </div>
-      <div class="top-actions">
-        <button id="settingsBtn" class="icon-btn" type="button"><span class="icon">⚙</span><span>设置</span></button>
-        <button id="helpBtn" class="icon-btn" type="button"><span class="icon">❓</span><span>帮助</span></button>
-        <button id="githubBtn" class="icon-btn" type="button"><span class="icon">🔗</span><span>GitHub</span></button>
+      <div class="top-actions" aria-label="全局操作">
+        <button id="settingsBtn" class="btn-secondary" type="button">设置</button>
+        <button id="helpBtn" class="btn-secondary" type="button">帮助</button>
+        <button id="githubBtn" class="btn-secondary" type="button">GitHub</button>
       </div>
-    </div>
+    </header>
 
-    <div class="workspace">
-      <div class="section">
-        <h2 class="section-title">转换类型</h2>
-        <div class="mode-group">
-          <label class="mode-option">
-            <input type="radio" name="conversionType" value="ini_to_excel" checked />
-            <div class="mode-card">
-              <strong>INI 转 Excel</strong>
-              <span>适用于一个 INI 文件、table 目录，或后续接入地图文件流程。</span>
-            </div>
-          </label>
-          <label class="mode-option">
-            <input type="radio" name="conversionType" value="excel_to_ini" />
-            <div class="mode-card">
-              <strong>Excel 转 INI</strong>
-              <span>将编辑后的 Excel 内容回写为对应的 INI 结构数据。</span>
-            </div>
-          </label>
+    <main class="workspace">
+      <section class="main-panel" aria-labelledby="workflowTitle">
+        <div class="panel-header">
+          <div>
+            <h2 id="workflowTitle" class="panel-title">转换流程</h2>
+            <p id="modeSummary" class="panel-desc">选择 table 目录或单个 INI 文件，导出为 Excel 工作簿。</p>
+          </div>
+          <div id="extLabel" class="output-chip">.xlsx</div>
         </div>
-      </div>
 
-      <div class="section">
-        <h2 class="section-title">输入与输出</h2>
-        <div class="field">
-          <label for="inputPath">输入路径</label>
-          <input id="inputPath" class="path-input" type="text" placeholder="请通过右侧按钮选择" disabled />
-          <button id="pickInputFolderBtn" class="btn-secondary" type="button">选择地图文件夹</button>
-          <div class="tooltip-wrap">
-            <button id="pickInputFileBtn" class="btn-secondary" type="button">选择地图</button>
-            <div id="mapPickTooltip" class="tooltip">请先在设置中配置 w3x2lni 路径，之后才能直接选择 .w3x 地图文件。</div>
+        <div class="content">
+          <div class="mode-group" role="radiogroup" aria-label="转换类型">
+            <label class="mode-option">
+              <input type="radio" name="conversionType" value="ini_to_excel" checked />
+              <div class="mode-card">
+                <div>
+                  <strong>INI 转 Excel</strong>
+                  <span>读取 ability.ini、unit.ini 等文件，整理为可筛选编辑的工作簿。</span>
+                </div>
+                <code>table → .xlsx</code>
+              </div>
+            </label>
+            <label class="mode-option">
+              <input type="radio" name="conversionType" value="excel_to_ini" />
+              <div class="mode-card">
+                <div>
+                  <strong>Excel 转 INI</strong>
+                  <span>将工作簿回写到原始 ini 位置，支持多等级数组和多行文本。</span>
+                </div>
+                <code>.xlsx → 原 ini</code>
+              </div>
+            </label>
+          </div>
+
+          <div class="form-grid">
+            <div class="field">
+              <label class="field-label" for="inputPath">输入路径</label>
+              <input id="inputPath" class="path-input" type="text" placeholder="请通过右侧按钮选择" disabled />
+              <button id="pickInputFolderBtn" class="btn-secondary" type="button">选择 table/目录</button>
+              <div class="tooltip-wrap" id="mapPickerWrap">
+                <button id="pickInputFileBtn" class="btn-secondary" type="button">选择 .w3x</button>
+                <div id="mapPickTooltip" class="tooltip">请先在设置中配置 w2l.exe 路径，之后才能直接选择 .w3x 地图文件。</div>
+              </div>
+            </div>
+
+            <div id="outputPathRow" class="field single-action">
+              <label class="field-label" for="outputPath">输出位置</label>
+              <input id="outputPath" class="path-input" type="text" placeholder="请通过右侧按钮选择" disabled />
+              <button id="pickOutputBtn" class="btn-secondary" type="button">浏览</button>
+            </div>
+
+            <div id="outputFilenameRow" class="field single-action">
+              <label id="outputFilenameLabel" class="field-label" for="outputFilename">输出文件名</label>
+              <input id="outputFilename" type="text" placeholder="output" />
+              <button id="revealOutputBtn" class="btn-ghost" type="button" disabled>打开输出</button>
+            </div>
+
+            <div id="originalLocationRow" class="option-row hidden">
+              <div class="field-label">回写位置</div>
+              <label class="settings-toggle" for="useOriginalIniLocation">
+                <input id="useOriginalIniLocation" type="checkbox" />
+                <span class="settings-switch" aria-hidden="true"></span>
+                <span id="useOriginalIniLocationText" class="settings-toggle-text">回写到原始 ini 文件</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="detail-row" aria-label="当前转换说明">
+            <div class="detail-item">
+              <div class="detail-label">输入格式</div>
+              <div id="inputHint" class="detail-value">INI 文件或 table 目录</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">输出格式</div>
+              <div id="outputHint" class="detail-value">单个 Excel 工作簿</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">回写规则</div>
+              <div id="ruleHint" class="detail-value">按配置映射工作表名称</div>
+            </div>
+          </div>
+
+          <section class="map-tools" aria-labelledby="mapToolsTitle">
+            <div class="map-tools-header">
+              <div>
+                <h2 id="mapToolsTitle" class="map-tools-title">地图拆包与装包</h2>
+                <p class="map-tools-desc">配置 w2l.exe 后，可把 .w3x 拆成目录，编辑 table 后再装回地图。</p>
+              </div>
+              <div id="w2lStateChip" class="output-chip">w2l 未配置</div>
+            </div>
+            <div class="form-grid">
+              <div class="field single-action">
+                <label class="field-label" for="w3xMapPath">地图文件</label>
+                <input id="w3xMapPath" class="path-input" type="text" placeholder="选择 .w3x" disabled />
+                <button id="pickW3xMapBtn" class="btn-secondary" type="button">浏览</button>
+              </div>
+              <div class="field single-action">
+                <label class="field-label" for="w3xWorkspacePath">拆包目录</label>
+                <input id="w3xWorkspacePath" class="path-input" type="text" placeholder="选择或保留默认目录" disabled />
+                <button id="pickW3xWorkspaceBtn" class="btn-secondary" type="button">浏览</button>
+              </div>
+              <div class="field single-action">
+                <label class="field-label" for="packedMapPath">装包输出</label>
+                <input id="packedMapPath" class="path-input" type="text" placeholder="output.w3x" />
+                <button id="pickPackedMapBtn" class="btn-secondary" type="button">浏览</button>
+              </div>
+              <div class="map-actions">
+                <button id="unpackW3xBtn" class="btn-secondary" type="button">拆包地图</button>
+                <button id="packW3xBtn" class="btn-primary" type="button">装包地图</button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <aside class="side-panel" aria-label="任务状态与提示">
+        <div class="side-section">
+          <h2 class="side-title">table 兼容</h2>
+          <ul class="check-list">
+            <li>识别 ability、buff、item、unit、upgrade 工作表。</li>
+            <li>多行文本回写为 Lua 长字符串。</li>
+            <li>等级字段支持数组、分隔符与 calc 表达式。</li>
+            <li>Excel 回写默认覆盖导出时记录的原 ini 文件。</li>
+          </ul>
+        </div>
+
+        <div class="side-section">
+          <div id="tipsBar" class="tips-bar" aria-live="polite">
+            <div class="tips-label">使用建议</div>
+            <div id="tipDisplay" class="tip-display">正在加载建议...</div>
           </div>
         </div>
 
-        <div class="field single-action">
-          <label for="outputPath">输出目录</label>
-          <input id="outputPath" class="path-input" type="text" placeholder="请通过右侧按钮选择" disabled />
-          <button id="pickOutputBtn" class="btn-secondary" type="button">浏览</button>
+        <div class="side-section">
+          <h2 class="side-title">执行</h2>
+          <div id="status" class="status" aria-live="polite">就绪</div>
         </div>
 
-        <div class="field single-action">
-          <label for="outputFilename">输出文件名</label>
-          <input id="outputFilename" type="text" placeholder="output" />
-          <div id="extLabel" class="status">.xlsx</div>
+        <div class="side-section">
+          <div class="actions">
+            <button id="convertBtn" class="btn-success" type="button">开始转换</button>
+            <button id="closeBtn" class="btn-primary" type="button">退出</button>
+          </div>
         </div>
-      </div>
-
-      <div class="bottom-bar">
-        <div id="tipsBar" class="tips-bar" aria-live="polite">
-          <div class="tips-label">使用建议</div>
-          <div id="tipDisplay" class="tip-display">正在加载建议...</div>
-        </div>
-        <div class="actions">
-          <div id="status" class="status">就绪</div>
-          <button id="convertBtn" class="btn-success" type="button">开始转换</button>
-          <button id="closeBtn" class="btn-primary" type="button">退出</button>
-        </div>
-      </div>
-    </div>
+      </aside>
+    </main>
   </div>
 
   <div id="settingsDialogMask" class="dialog-mask" aria-hidden="true">
@@ -662,12 +952,12 @@
       </div>
       <div class="dialog-body">
         <div class="settings-row settings-row--input">
-          <label for="w3x2lniPath">w3x2lni</label>
+          <label class="field-label" for="w3x2lniPath">w2l.exe</label>
           <input id="w3x2lniPath" class="path-input" type="text" placeholder="未配置" disabled />
           <button id="pickW3x2lniBtn" class="btn-secondary" type="button">选择程序</button>
         </div>
         <div class="settings-row settings-row--toggle">
-          <label for="enableCalcFormulaDetection">公式识别</label>
+          <label class="field-label" for="enableCalcFormulaDetection">公式识别</label>
           <label class="settings-toggle" for="enableCalcFormulaDetection">
             <input id="enableCalcFormulaDetection" type="checkbox" />
             <span class="settings-switch" aria-hidden="true"></span>
@@ -675,10 +965,11 @@
           </label>
         </div>
         <div class="settings-inline-help">
-          导出时自动识别等差数列为 calc@A±B。
+          INI 转 Excel 时自动把等差数列压缩为 calc@A+B；Excel 回写会按 levels 展开。
         </div>
         <div class="settings-help">
-          如果提示w3x2lni损坏，请到<a href="https://github.com/sumneko/w3x2lni" target="_blank">w3x2lni</a>重新下载。
+          请选择 w2l.exe；如果只找到 w3x2lni.exe，程序会尝试使用同目录下的 w2l.exe。
+          下载地址：<a href="https://github.com/sumneko/w3x2lni" target="_blank">w3x2lni</a>。
         </div>
       </div>
       <div class="dialog-footer">
@@ -693,27 +984,68 @@
       conversionType: 'ini_to_excel',
       ext: '.xlsx',
       hasW3x2lni: false,
+      hasW2l: false,
       w3x2lniPath: '',
       enableCalcFormulaDetection: true,
+      forms: {
+        ini_to_excel: {
+          inputPath: '',
+          outputPath: '',
+          outputFilename: 'output'
+        },
+        excel_to_ini: {
+          inputPath: '',
+          outputPath: '',
+          outputFilename: '',
+          useOriginalIniLocation: true
+        }
+      },
+      w3x: {
+        mapPath: '',
+        workspacePath: '',
+        packedMapPath: ''
+      },
       githubUrl: 'https://github.com/SoulQAQ/war3we-ini-excel-converter',
       helpUrl: 'http://soul2.cn/read/doc/war3we-ini-excel-converter/help.html',
       uiTips: [],
       tipIndex: 0,
-      tipTimer: null
+      tipTimer: null,
+      lastOutputFile: ''
     };
 
     const els = {
       inputPath: document.getElementById('inputPath'),
       outputPath: document.getElementById('outputPath'),
       outputFilename: document.getElementById('outputFilename'),
+      outputPathRow: document.getElementById('outputPathRow'),
+      outputFilenameRow: document.getElementById('outputFilenameRow'),
+      outputFilenameLabel: document.getElementById('outputFilenameLabel'),
+      originalLocationRow: document.getElementById('originalLocationRow'),
+      useOriginalIniLocation: document.getElementById('useOriginalIniLocation'),
+      useOriginalIniLocationText: document.getElementById('useOriginalIniLocationText'),
       extLabel: document.getElementById('extLabel'),
+      modeSummary: document.getElementById('modeSummary'),
+      inputHint: document.getElementById('inputHint'),
+      outputHint: document.getElementById('outputHint'),
+      ruleHint: document.getElementById('ruleHint'),
+      w2lStateChip: document.getElementById('w2lStateChip'),
+      w3xMapPath: document.getElementById('w3xMapPath'),
+      w3xWorkspacePath: document.getElementById('w3xWorkspacePath'),
+      packedMapPath: document.getElementById('packedMapPath'),
+      pickW3xMapBtn: document.getElementById('pickW3xMapBtn'),
+      pickW3xWorkspaceBtn: document.getElementById('pickW3xWorkspaceBtn'),
+      pickPackedMapBtn: document.getElementById('pickPackedMapBtn'),
+      unpackW3xBtn: document.getElementById('unpackW3xBtn'),
+      packW3xBtn: document.getElementById('packW3xBtn'),
       status: document.getElementById('status'),
       tipDisplay: document.getElementById('tipDisplay'),
       pickInputFolderBtn: document.getElementById('pickInputFolderBtn'),
       pickInputFileBtn: document.getElementById('pickInputFileBtn'),
+      mapPickerWrap: document.getElementById('mapPickerWrap'),
       pickOutputBtn: document.getElementById('pickOutputBtn'),
       convertBtn: document.getElementById('convertBtn'),
       closeBtn: document.getElementById('closeBtn'),
+      revealOutputBtn: document.getElementById('revealOutputBtn'),
       settingsBtn: document.getElementById('settingsBtn'),
       helpBtn: document.getElementById('helpBtn'),
       githubBtn: document.getElementById('githubBtn'),
@@ -761,17 +1093,80 @@
     }
 
     function updateMapPickerState() {
-      const disabled = !state.hasW3x2lni || state.conversionType !== 'ini_to_excel';
+      const isIniToExcel = state.conversionType === 'ini_to_excel';
+      const disabled = !state.hasW2l || !isIniToExcel;
+      els.mapPickerWrap.classList.toggle('hidden', !isIniToExcel);
       els.pickInputFileBtn.disabled = disabled;
-      els.mapPickTooltip.classList.toggle('hidden', !disabled || state.conversionType !== 'ini_to_excel');
+      els.mapPickTooltip.classList.toggle('hidden', !disabled || !isIniToExcel);
+      els.w2lStateChip.textContent = state.hasW2l ? 'w2l 已配置' : 'w2l 未配置';
+      els.unpackW3xBtn.disabled = !state.hasW2l;
+      els.packW3xBtn.disabled = !state.hasW2l;
+    }
+
+    function resetLastOutput() {
+      state.lastOutputFile = '';
+      els.revealOutputBtn.disabled = true;
+    }
+
+    function currentForm() {
+      return state.forms[state.conversionType];
+    }
+
+    function saveVisibleForm() {
+      const form = currentForm();
+      form.inputPath = els.inputPath.value;
+      form.outputPath = els.outputPath.value;
+      form.outputFilename = els.outputFilename.value;
+      if (state.conversionType === 'excel_to_ini') {
+        form.useOriginalIniLocation = !!els.useOriginalIniLocation.checked;
+      }
+    }
+
+    function renderVisibleForm() {
+      const form = currentForm();
+      els.inputPath.value = form.inputPath || '';
+      els.outputPath.value = form.outputPath || '';
+      els.outputFilename.value = form.outputFilename || '';
+      if (state.conversionType === 'excel_to_ini') {
+        els.useOriginalIniLocation.checked = form.useOriginalIniLocation !== false;
+      }
+    }
+
+    function renderMapTools() {
+      els.w3xMapPath.value = state.w3x.mapPath || '';
+      els.w3xWorkspacePath.value = state.w3x.workspacePath || '';
+      els.packedMapPath.value = state.w3x.packedMapPath || '';
+      updateMapPickerState();
+    }
+
+    function syncOriginalLocationToggle() {
+      const useOriginal = !!els.useOriginalIniLocation.checked;
+      state.forms.excel_to_ini.useOriginalIniLocation = useOriginal;
+      els.useOriginalIniLocationText.textContent = useOriginal ? '回写到原始 ini 文件' : '输出到指定 table 目录';
+      els.outputPathRow.classList.toggle('hidden', state.conversionType === 'excel_to_ini' && useOriginal);
+      els.outputFilenameRow.classList.toggle('hidden', state.conversionType === 'excel_to_ini' && useOriginal);
     }
 
     function syncModeUI() {
-      state.ext = state.conversionType === 'ini_to_excel' ? '.xlsx' : '.ini';
-      els.extLabel.textContent = state.ext;
-      els.pickInputFolderBtn.textContent = state.conversionType === 'ini_to_excel' ? '选择地图文件夹' : '选择 Excel 文件';
-      els.pickInputFileBtn.textContent = state.conversionType === 'ini_to_excel' ? '选择地图' : '选择 Excel';
+      const isIniToExcel = state.conversionType === 'ini_to_excel';
+      state.ext = isIniToExcel ? '.xlsx' : '目录';
+      renderVisibleForm();
+      els.extLabel.textContent = isIniToExcel ? '输出 .xlsx' : '回写原 ini';
+      els.modeSummary.textContent = isIniToExcel
+        ? '选择 table 目录或单个 INI 文件，导出为 Excel 工作簿。'
+        : '选择编辑后的 Excel 工作簿，默认回写到导出时记录的原始 INI 文件。';
+      els.pickInputFolderBtn.textContent = isIniToExcel ? '选择 table/目录' : '选择 Excel';
+      els.pickInputFileBtn.textContent = '选择 .w3x';
+      els.outputFilenameLabel.textContent = isIniToExcel ? '输出文件名' : '输出目录名';
+      els.inputHint.textContent = isIniToExcel ? 'INI 文件、table 目录或 LNI 地图目录' : '由本工具导出的 Excel 工作簿';
+      els.outputHint.textContent = isIniToExcel ? '单个 Excel 工作簿' : '覆盖原始 ability.ini、unit.ini 等文件';
+      els.ruleHint.textContent = isIniToExcel ? '跳过 imp、w3i、misc 等非物编数据' : '使用 Excel 隐藏表记录的原始文件路径';
+      els.originalLocationRow.classList.toggle('hidden', isIniToExcel);
+      els.outputPathRow.classList.toggle('hidden', false);
+      els.outputFilenameRow.classList.toggle('hidden', false);
+      syncOriginalLocationToggle();
       updateMapPickerState();
+      resetLastOutput();
       setStatus('就绪');
     }
 
@@ -779,7 +1174,7 @@
       if (!path) {
         return '';
       }
-      return path.replace(/[\\/]w2l\.exe$/i, '').replace(/[\\/]$/, '');
+      return path;
     }
 
     function syncCalcFormulaDetectionToggle() {
@@ -793,11 +1188,13 @@
       els.w3x2lniPath.value = formatW3x2lniDisplay(state.w3x2lniPath || '');
       els.enableCalcFormulaDetection.checked = !!state.enableCalcFormulaDetection;
       syncCalcFormulaDetectionToggle();
+      els.cancelSettingsBtn.focus();
     }
 
     function closeSettingsDialog() {
       els.settingsDialogMask.classList.remove('show');
       els.settingsDialogMask.setAttribute('aria-hidden', 'true');
+      els.settingsBtn.focus();
     }
 
     async function callApi(method, payload = {}) {
@@ -818,11 +1215,25 @@
     async function bootstrap() {
       try {
         const config = await callApi('get_initial_state');
-        els.inputPath.value = config.input_path || '';
-        els.outputPath.value = config.output_path || '';
-        els.outputFilename.value = config.output_filename || 'output';
+        state.forms.ini_to_excel = {
+          inputPath: config.ini_to_excel?.input_path || '',
+          outputPath: config.ini_to_excel?.output_path || '',
+          outputFilename: config.ini_to_excel?.output_filename || 'output'
+        };
+        state.forms.excel_to_ini = {
+          inputPath: config.excel_to_ini?.input_path || '',
+          outputPath: config.excel_to_ini?.output_path || '',
+          outputFilename: config.excel_to_ini?.output_filename || '',
+          useOriginalIniLocation: config.excel_to_ini?.use_original_ini_location !== false
+        };
+        state.w3x = {
+          mapPath: config.w3x?.map_path || '',
+          workspacePath: config.w3x?.workspace_path || '',
+          packedMapPath: config.w3x?.packed_map_path || ''
+        };
         state.conversionType = config.conversion_type || 'ini_to_excel';
         state.hasW3x2lni = !!config.has_w3x2lni;
+        state.hasW2l = !!config.has_w2l || !!config.has_w3x2lni;
         state.w3x2lniPath = config.w3x2lni_path || '';
         state.enableCalcFormulaDetection = config.enable_calc_formula_detection !== false;
         state.uiTips = Array.isArray(config.ui_tips) ? config.ui_tips : [];
@@ -833,6 +1244,7 @@
         if (checkedRadio) checkedRadio.checked = true;
 
         startTipRotation();
+        renderMapTools();
         syncModeUI();
       } catch (error) {
         setStatus(error.message || String(error), 'error');
@@ -840,7 +1252,8 @@
     }
 
     document.querySelectorAll('input[name="conversionType"]').forEach((radio) => {
-      radio.addEventListener('change', async (event) => {
+      radio.addEventListener('change', (event) => {
+        saveVisibleForm();
         state.conversionType = event.target.value;
         syncModeUI();
       });
@@ -852,13 +1265,17 @@
           const result = await callApi('pick_input_file', { conversion_type: state.conversionType });
           if (result && result.path !== undefined) {
             els.inputPath.value = result.path || '';
+            currentForm().inputPath = els.inputPath.value;
+            resetLastOutput();
           }
           return;
         }
 
-        const result = await callApi('pick_input_folder');
+        const result = await callApi('pick_input_folder', { conversion_type: state.conversionType });
         if (result && result.path !== undefined) {
           els.inputPath.value = result.path || '';
+          currentForm().inputPath = els.inputPath.value;
+          resetLastOutput();
         }
       } catch (error) {
         setStatus(error.message || String(error), 'error');
@@ -875,6 +1292,8 @@
         }
         if (result && result.path !== undefined) {
           els.inputPath.value = result.path || '';
+          currentForm().inputPath = els.inputPath.value;
+          resetLastOutput();
         }
       } catch (error) {
         setStatus(error.message || String(error), 'error');
@@ -883,30 +1302,166 @@
 
     els.pickOutputBtn.addEventListener('click', async () => {
       try {
-        const result = await callApi('pick_output_folder');
+        const result = await callApi('pick_output_folder', { conversion_type: state.conversionType });
         if (result && result.path !== undefined) {
           els.outputPath.value = result.path || '';
+          currentForm().outputPath = els.outputPath.value;
+          resetLastOutput();
         }
       } catch (error) {
         setStatus(error.message || String(error), 'error');
       }
     });
 
+    els.inputPath.addEventListener('input', () => {
+      currentForm().inputPath = els.inputPath.value;
+      resetLastOutput();
+    });
+
+    els.outputPath.addEventListener('input', () => {
+      currentForm().outputPath = els.outputPath.value;
+      resetLastOutput();
+    });
+
+    els.outputFilename.addEventListener('input', () => {
+      currentForm().outputFilename = els.outputFilename.value;
+      resetLastOutput();
+    });
+
+    els.useOriginalIniLocation.addEventListener('change', () => {
+      syncOriginalLocationToggle();
+      resetLastOutput();
+    });
+
+    els.packedMapPath.addEventListener('input', () => {
+      state.w3x.packedMapPath = els.packedMapPath.value;
+    });
+
     els.convertBtn.addEventListener('click', async () => {
+      saveVisibleForm();
       els.convertBtn.disabled = true;
       setStatus('正在执行转换...');
       try {
+        const form = currentForm();
         const result = await callApi('run_conversion', {
-          input_path: els.inputPath.value,
-          output_path: els.outputPath.value,
-          output_filename: els.outputFilename.value,
-          conversion_type: state.conversionType
+          input_path: form.inputPath,
+          output_path: form.outputPath,
+          output_filename: form.outputFilename,
+          conversion_type: state.conversionType,
+          use_original_ini_location: state.conversionType === 'excel_to_ini'
+            ? form.useOriginalIniLocation !== false
+            : false
         });
         setStatus(result.message || '转换完成', result.success ? 'success' : 'error');
+        if (result.success && result.output_file) {
+          state.lastOutputFile = result.output_file;
+          els.revealOutputBtn.disabled = false;
+        }
       } catch (error) {
         setStatus(error.message || String(error), 'error');
       } finally {
         els.convertBtn.disabled = false;
+      }
+    });
+
+    els.revealOutputBtn.addEventListener('click', async () => {
+      if (!state.lastOutputFile) {
+        return;
+      }
+      try {
+        const result = await callApi('reveal_output_path', { path: state.lastOutputFile });
+        if (result && !result.success) {
+          setStatus(result.message || '打开输出位置失败', 'error');
+        }
+      } catch (error) {
+        setStatus(error.message || String(error), 'error');
+      }
+    });
+
+    els.pickW3xMapBtn.addEventListener('click', async () => {
+      try {
+        const result = await callApi('pick_w3x_map_file');
+        if (result && result.path !== undefined) {
+          state.w3x.mapPath = result.path || '';
+          renderMapTools();
+        }
+      } catch (error) {
+        setStatus(error.message || String(error), 'error');
+      }
+    });
+
+    els.pickW3xWorkspaceBtn.addEventListener('click', async () => {
+      try {
+        const result = await callApi('pick_w3x_workspace_folder');
+        if (result && result.path !== undefined) {
+          state.w3x.workspacePath = result.path || '';
+          renderMapTools();
+        }
+      } catch (error) {
+        setStatus(error.message || String(error), 'error');
+      }
+    });
+
+    els.pickPackedMapBtn.addEventListener('click', async () => {
+      try {
+        const currentName = (state.w3x.packedMapPath || '').split(/[\\/]/).pop() || 'output.w3x';
+        const result = await callApi('pick_packed_w3x_file', { filename: currentName });
+        if (result && result.path !== undefined) {
+          state.w3x.packedMapPath = result.path || '';
+          renderMapTools();
+        }
+      } catch (error) {
+        setStatus(error.message || String(error), 'error');
+      }
+    });
+
+    els.unpackW3xBtn.addEventListener('click', async () => {
+      els.unpackW3xBtn.disabled = true;
+      setStatus('正在拆包地图...');
+      try {
+        const result = await callApi('unpack_w3x', {
+          map_path: state.w3x.mapPath,
+          workspace_path: state.w3x.workspacePath
+        });
+        setStatus(result.message || '拆包完成', result.success ? 'success' : 'error');
+        if (result.success) {
+          state.w3x.workspacePath = result.workspace_path || state.w3x.workspacePath;
+          if (result.table_path) {
+            state.forms.ini_to_excel.inputPath = result.table_path;
+            if (state.conversionType === 'ini_to_excel') {
+              els.inputPath.value = result.table_path;
+            }
+          }
+          state.lastOutputFile = state.w3x.workspacePath;
+          els.revealOutputBtn.disabled = false;
+          renderMapTools();
+        }
+      } catch (error) {
+        setStatus(error.message || String(error), 'error');
+      } finally {
+        updateMapPickerState();
+      }
+    });
+
+    els.packW3xBtn.addEventListener('click', async () => {
+      els.packW3xBtn.disabled = true;
+      setStatus('正在装包地图...');
+      try {
+        const result = await callApi('pack_w3x', {
+          workspace_path: state.w3x.workspacePath,
+          packed_map_path: state.w3x.packedMapPath
+        });
+        setStatus(result.message || '装包完成', result.success ? 'success' : 'error');
+        if (result.success && result.packed_map_path) {
+          state.w3x.packedMapPath = result.packed_map_path;
+          state.lastOutputFile = result.packed_map_path;
+          els.revealOutputBtn.disabled = false;
+          renderMapTools();
+        }
+      } catch (error) {
+        setStatus(error.message || String(error), 'error');
+      } finally {
+        updateMapPickerState();
       }
     });
 
@@ -945,7 +1500,7 @@
         }
 
         if (!result.success) {
-          const shouldDownload = window.confirm((result.message || 'w3x2lni 已损坏。') + '\n\n点击“确定”前往下载页，点击“取消”返回。');
+          const shouldDownload = window.confirm((result.message || 'w2l.exe 路径无效。') + '\n\n点击“确定”前往下载页，点击“取消”返回。');
           if (shouldDownload && result.download_url) {
             await openLink(result.download_url);
           }
@@ -954,14 +1509,28 @@
 
         state.w3x2lniPath = result.w3x2lni_path || '';
         els.w3x2lniPath.value = formatW3x2lniDisplay(state.w3x2lniPath);
+        state.hasW2l = !!state.w3x2lniPath;
+        state.hasW3x2lni = !!state.w3x2lniPath;
+        updateMapPickerState();
       } catch (error) {
         setStatus(error.message || String(error), 'error');
       }
     });
 
     els.enableCalcFormulaDetection.addEventListener('change', syncCalcFormulaDetectionToggle);
-
     els.cancelSettingsBtn.addEventListener('click', closeSettingsDialog);
+
+    els.settingsDialogMask.addEventListener('click', (event) => {
+      if (event.target === els.settingsDialogMask) {
+        closeSettingsDialog();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && els.settingsDialogMask.classList.contains('show')) {
+        closeSettingsDialog();
+      }
+    });
 
     els.saveSettingsBtn.addEventListener('click', async () => {
       try {
@@ -971,6 +1540,7 @@
         });
         state.w3x2lniPath = result.w3x2lni_path || '';
         state.hasW3x2lni = !!result.has_w3x2lni;
+        state.hasW2l = !!result.has_w2l || !!result.has_w3x2lni;
         state.enableCalcFormulaDetection = result.enable_calc_formula_detection !== false;
         updateMapPickerState();
         setStatus(result.message || '设置已保存。', 'success');

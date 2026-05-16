@@ -9,7 +9,7 @@
 - 将 Warcraft III 物体数据从 `INI` 转换为 `Excel`
 - 将编辑后的 `Excel` 转换回 `INI`
 - 便于在表格中整理、筛选和批量修改物体数据
-- 当在工具中指定并配置 [`w3x2lni`](https://github.com/sumneko/w3x2lni) 的安装目录后，可使用其相关 `.w3x` 转换功能
+- 配置 [`w3x2lni`](https://github.com/sumneko/w3x2lni) 附带的 `w2l.exe` 后，可执行 `.w3x` 拆包与装包
 
 ## 项目目标
 
@@ -20,16 +20,16 @@
 1. 将地图物体数据导出为 `LNI` 或 `INI`
 2. 在 `Excel` 中编辑数据
 3. 将修改后的数据导回 Warcraft III 可用格式
-4. 如果已安装并在工具中配置 [`w3x2lni`](https://github.com/sumneko/w3x2lni)，即可支持相关 `.w3x` 转换流程
+4. 如果已安装并在工具中配置 `w2l.exe`，即可完成 `.w3x` 拆包和装包流程
 
 ## 当前状态
 
 本仓库仍在持续开发中。
 
 - `INI` → `Excel` 转换已可使用
-- `Excel` → `INI` 转换计划中 / 开发中
+- `Excel` → `INI` 转换已支持，默认回写到导出 Excel 时记录的原始 INI 文件位置
 - 图形界面位于 [`script/gui.py`](script/gui.py)
-- `w3x2lni` 功能依赖于在工具中配置正确的安装路径
+- `w3x2lni` 功能依赖于在工具中配置正确的 `w2l.exe` 路径
 
 ## 仓库结构
 
@@ -54,7 +54,7 @@
 
 ### 2. `Excel` 转 `INI`
 
-运行 [`script/excel_to_ini.py`](script/excel_to_ini.py) 中的反向转换脚本。
+运行 [`script/excel_to_ini.py`](script/excel_to_ini.py) 中的反向转换脚本。由本工具导出的工作簿会记录每个工作表的原始 INI 路径，图形界面默认回写到这些原始位置；也可以关闭原位置回写，按工作表名称生成到指定 `table` 目录。
 
 ### 3. 图形界面模式
 
@@ -62,7 +62,7 @@
 
 ### 4. `w3x2lni` 辅助流程
 
-当你已安装 [`w3x2lni`](https://github.com/sumneko/w3x2lni) 并在工具中指定其安装目录后，项目即可调用其相关能力，支持 `.w3x` 相关转换流程。
+当你已安装 [`w3x2lni`](https://github.com/sumneko/w3x2lni) 并在工具中配置 `w2l.exe` 后，项目即可调用 `w2l.exe unpack` 拆包 `.w3x`，并调用 `w2l.exe pack` 将编辑后的目录重新装包为 `.w3x`。
 
 ## 自行编译 / 构建教程
 
@@ -148,8 +148,8 @@ build.bat
 ## 说明
 
 - 本项目专注于 Warcraft III 物体数据编辑流程。
-- `w3x2lni` 相关功能仅在工具中配置了正确的安装路径后可用。
-- 生成的文件会保存在 [`rundata/output/`](rundata/output/)。
+- `w3x2lni` 相关功能仅在工具中配置了正确的 `w2l.exe` 路径后可用。
+- `INI → Excel` 默认生成到 [`rundata/output/`](rundata/output/)；`Excel → INI` 默认回写到原始 INI 文件位置。
 
 ## 许可证
 
