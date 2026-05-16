@@ -26,10 +26,18 @@
 
 本仓库仍在持续开发中。
 
+<<<<<<< HEAD
 - `INI` → `Excel` 转换已可使用
 - `Excel` → `INI` 转换已支持，默认回写到导出 Excel 时记录的原始 INI 文件位置
 - 图形界面位于 [`script/gui.py`](script/gui.py)
 - `w3x2lni` 功能依赖于在工具中配置正确的 `w2l.exe` 路径
+=======
+- `INI` → `Excel` 转换已可使用，功能完善
+- `Excel` → `INI` 转换正在开发中
+- 图形界面位于 [`script/gui.py`](script/gui.py)
+- `w3x2lni` 功能依赖于在工具中配置正确的安装路径
+- INI→Excel 和 Excel→INI 模式拥有独立的工作区和路径配置
+>>>>>>> c7000fd00ff82f4af44147a5d8ffb0a672e2ed74
 
 ## 仓库结构
 

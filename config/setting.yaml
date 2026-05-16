@@ -5,6 +5,7 @@ ini_names:
   unit.ini: 单位
   upgrade.ini: 科技
 user_settings:
+<<<<<<< HEAD
   conversion_type: ini_to_excel
   w3x2lni_path: ''
   enable_calc_formula_detection: true
@@ -21,6 +22,16 @@ user_settings:
     map_path: ''
     workspace_path: ./rundata/map
     packed_map_path: ./rundata/output/output.w3x
+=======
+  input_path: D:\Game\map\Attack and defense 0.1.36-preview\table
+  conversion_type: ini_to_excel
+  w3x2lni_path: ../../w3x2lni/w2l.exe
+  enable_calc_formula_detection: true
+  excel_to_ini_map_path: ''
+  excel_file_path: ''
+  output_path: rundata/output
+  output_filename: output
+>>>>>>> c7000fd00ff82f4af44147a5d8ffb0a672e2ed74
 ui_tips:
 - 建议优先使用已拆解完成的 table 目录做通用规则验证。
 - Excel 回写会优先写回导出时记录的原始 ini 文件位置。

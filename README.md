@@ -26,10 +26,18 @@ Typical workflow:
 
 This repository is still under active development.
 
+<<<<<<< HEAD
 - `INI` → `Excel` conversion is available
 - `Excel` → `INI` conversion is available and defaults to writing back to original INI paths recorded in exported workbooks
 - GUI support is included in [`script/gui.py`](script/gui.py)
 - `w3x2lni` support depends on a valid `w2l.exe` path configured in the tool
+=======
+- `INI` → `Excel` conversion is available and feature-complete
+- `Excel` → `INI` conversion is under active development
+- GUI support is included in [`script/gui.py`](script/gui.py)
+- `w3x2lni` support depends on the installation directory configured in the tool
+- Separate workspaces for INI→Excel and Excel→INI modes with independent path configurations
+>>>>>>> c7000fd00ff82f4af44147a5d8ffb0a672e2ed74
 
 ## Repository Structure
 
